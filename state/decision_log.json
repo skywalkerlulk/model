@@ -1,0 +1,149 @@
+{
+  "_schema_version": "3.0",
+  "competition": "cumcm",
+  "task_type": "cumcm:A_simulation",
+  "_task_type_note": "本年度A题为变物性耦合传热传质PDE仿真 (干燥), 非典型优化; 按 stage2 分析改判为仿真/动力系统类, dim 权重用 default 全 1.0",
+  "problem": "A题 药材的烘干问题",
+  "problem_meta": {
+    "year": 2026,
+    "letter": "A",
+    "title": "药材的烘干问题",
+    "deadline_iso": "2026-09-13T20:00:00+08:00",
+    "team_size": 3
+  },
+  "mode": "standard",
+  "started_at": "2026-09-10T19:15:00+08:00",
+  "current_stage": 5,
+  "stage_5_active_qi": "Q1",
+  "budget": {
+    "tokens_used": 0,
+    "tokens_cap": 200000,
+    "stage_durations_h": {
+      "0": 1, "1": 0.5, "2": 2, "3": 2, "4": 1, "5": 12, "6": 2, "7": 1.5, "8": 13, "9": 3, "buffer": 3
+    }
+  },
+  "stages": {
+    "0": {
+      "_label": "kickoff",
+      "team_roles": {"建模主": "队员1", "编程主": "队员2", "写作主": "队员3", "note": "3人分工齐全 (2026-09-10 确认)"},
+      "tools_ready": ["python3", "numpy/scipy/pandas/pdfplumber 已验证", "openpyxl"],
+      "checklist_completed": true,
+      "problem_scan": {
+        "problem_id": "2026-A",
+        "domain_keywords": ["热风烘干", "传热传质", "圆柱药材", "变物性扩散", "移动边界收缩", "预热平衡", "恒温干燥"],
+        "data_attachments": ["附件1: 烘房温度/水分浓度 0-14400s (60s间隔)", "附件2: 药材半径 0-259200s (1800s间隔, 终值1.198cm)", "附件3: result1-4模板 (result4末列=药材表面)"],
+        "subproblem_count": 4,
+        "primary_problem_type": "仿真类-动力系统 (PDE)",
+        "secondary_types": ["物理建模", "数值分析"],
+        "estimated_difficulty": "medium-high",
+        "data_size_signal": "小 (附件<1MB)"
+      },
+      "time_budget_h": {"0": 1, "1": 0.5, "2": 2, "3": 2, "4": 1, "5": 12, "6": 2, "7": 1.5, "8": 13, "9": 3, "buffer": 3},
+      "collab_protocol": {"命名": "models_qN.py / solver_core.py / make_resultN.py", "git": "每2h提交", "同步": "每4h同步5min"},
+      "notes": "截止 2026-09-13 20:00; 已过 1h. A题已定 (目录唯一题). 数据关键发现: 附件1平台期 T≈49.97±0.17°C, C≈0.050±0.000 kg/kg (t>7200s); 附件2半径平台 252000s→1.198cm (70h) 可作Q3/Q4交叉验证锚点"
+    },
+    "1": {
+      "_label": "problem_selection",
+      "candidates_assessed": ["A (唯一在目录, 已选)"],
+      "selected": "A",
+      "rationale": "用户目录仅含A题文件; 物理机理清晰, 四问层层递进 (常物性→变物性耦合→时长判据→移动边界), 天然复用链符合一等奖模式",
+      "rejected_alternatives": [],
+      "risks_identified": ["非线性D(C,T)刚性问题需隐式时间推进", "Q4移动边界离散易错", "4位小数精度要求需网格收敛验证"]
+    },
+    "2": {
+      "_label": "analysis",
+      "decomposition": [
+        {
+          "q": "Q1", "nl": "预热平衡阶段圆柱药材温度与水分浓度的瞬态分布",
+          "inputs": ["附录2常物性 ρ=820 cp=2600 k=0.36 h=25 β=8e-7 D=7e-9e^{-0.89/C}", "附件1 烘房T/C 时间序列(0-14400s)", "几何 R=0.02m L=0.25m"],
+          "outputs": ["T(r,t), C(r,t) 0-1800s表1表2 + result1.xlsx(1s×0.1cm, 4位小数)"],
+          "constraints": ["轴对称1D", "T(r,0)=28, C(r,0)=2.55", "对流边界h,β", "长圆柱近似(端面影响可忽略, Bi/Fo佐证)"],
+          "objective": "给出符合题设的T,C演化规律并高精度输出",
+          "type": "PDE仿真(常物性, 单向弱耦合)", "difficulty": "medium"
+        },
+        {
+          "q": "Q2", "nl": "全流程(预热+恒温)变物性双向耦合烘干模型",
+          "inputs": ["附录3经验式 ρ(C) cp(C) k(C) D(C,T)", "附件1环境条件(0-4h)+平台期外推", "Q1初始态(可选复用: 预热段即Q1物性变体)"],
+          "outputs": ["表3表4 (3h内每0.5h) + result2.xlsx(1s×0.1cm)"],
+          "constraints": ["D的Arrhenius项T取K", "C_env=0.05<T_final=0.15可达成", "两阶段边界条件连续切换"],
+          "objective": "复现2-3天干燥过程, 与附件2时间尺度吻合",
+          "type": "PDE仿真(变物性, 双向耦合)", "difficulty": "medium-hard"
+        },
+        {
+          "q": "Q3", "nl": "烘干时长判定: max_r C(r,t)<0.15 kg/kg",
+          "inputs": ["Q2模型与参数", "判据0.15 kg/kg"],
+          "outputs": ["表5(每6h×0.5cm至结束) + result3.xlsx(60s×0.1cm)", "烘干时长(h)"],
+          "constraints": ["各处满足判据(中心点为最严点)", "时间分辨率60s"],
+          "objective": "确定烘干所需最短时间",
+          "type": "Q2模型复用+终止判据", "difficulty": "medium"
+        },
+        {
+          "q": "Q4", "nl": "考虑半径收缩的移动边界烘干模型",
+          "inputs": ["附录4经验式 ρ cp k D", "附件2 R(t)数据(PCHIP插值, Ṙ)", "Q3判据"],
+          "outputs": ["表6(每6h, 0至药材表面) + result4.xlsx(60s×0.1cm+表面列)", "收缩情形烘干时长"],
+          "constraints": ["Landau变换固定域 ξ=r/R(t)", "干物质质量守恒校验", "与附件2收缩规律一致"],
+          "objective": "给出收缩下的烘干时长并与Q3对比",
+          "type": "PDE仿真(移动边界)", "difficulty": "hard"
+        }
+      ],
+      "key_variables": [
+        {"sym": "T(r,t)", "含义": "药材温度", "unit": "°C", "type": "状态", "in": "Q1-Q4"},
+        {"sym": "C(r,t)", "含义": "干基含水率", "unit": "kg/kg", "type": "状态", "in": "Q1-Q4"},
+        {"sym": "T_env(t)", "含义": "烘房温度", "unit": "°C", "type": "参数(附件1+外推)", "in": "Q1-Q4"},
+        {"sym": "C_env(t)", "含义": "烘房水分浓度", "unit": "kg/kg", "type": "参数(附件1+外推)", "in": "Q1-Q4"},
+        {"sym": "R(t)", "含义": "药材半径", "unit": "cm", "type": "参数(附件2)", "in": "Q4"},
+        {"sym": "ρ, cp, k", "含义": "密度/比热容/导热系数", "unit": "kg/m³, J/(kg·K), W/(m·K)", "type": "物性(C或常数)", "in": "Q1-Q4"},
+        {"sym": "D(C,T)", "含义": "水分扩散系数", "unit": "m²/s", "type": "物性(经验式)", "in": "Q1-Q4"},
+        {"sym": "h", "含义": "对流换热系数", "unit": "W/(m²·K)", "type": "参数=25", "in": "Q1-Q4"},
+        {"sym": "β_m", "含义": "对流传质系数", "unit": "m/s", "type": "参数=8e-7", "in": "Q1-Q4"},
+        {"sym": "t_end", "含义": "烘干时长", "unit": "h", "type": "输出(Q3/Q4)", "in": "Q3,Q4"},
+        {"sym": "Bi,Fo,Lu", "含义": "Biot/Fourier/Luikov数", "unit": "-", "type": "导出量", "in": "Q1-Q4"},
+        {"sym": "ξ", "含义": "归一化半径 r/R(t)", "unit": "-", "type": "变换坐标", "in": "Q4"}
+      ],
+      "key_constraints": [
+        "轴对称: ∂/∂r|r=0 = 0",
+        "对流边界: -k∂T/∂r=h(T-T_env), -D∂C/∂r=β(C-C_env) @ r=R",
+        "Q3判据: max_r C(r,t_end) < 0.15 kg/kg",
+        "输出精度: 4位小数, 时间/距离分辨率按题目",
+        "附录3/4公式中T取开尔文"
+      ],
+      "objective_per_subproblem": {
+        "Q1": "最小化模型-数据偏差 (用附件1边界直接驱动, 保真)",
+        "Q2": "复现全流程, 平台外推有数据统计支撑",
+        "Q3": "min t_end s.t. 判据, 与附件2的70h平台交叉验证",
+        "Q4": "min t_end s.t. 判据, 干物质守恒残差最小"
+      },
+      "data_schema": {
+        "附件1": {"rows": 241, "cols": ["时间s", "温度°C", "水分浓度kg/kg"], "span": "0-14400s", "interval": "60s", "quality": "无缺失; t≥7200s平台: T 49.97±0.17, C 0.050±0.000"},
+        "附件2": {"rows": 145, "cols": ["时间s", "半径cm"], "span": "0-259200s", "interval": "1800s", "quality": "无缺失; 单调递减至1.198cm后平台(252000s起)"},
+        "附件3": {"result1": "温度+水分浓度两sheet, 时间0-1800s(1s), 距离0-2cm(0.1cm)", "result2": "同结构(3h内1s×0.1cm)", "result3": "单sheet 60s×0.1cm至烘干结束", "result4": "单sheet 60s×0.1cm, 末列=药材表面"}
+      },
+      "subproblem_dependency": {"Q1": [], "Q2": ["Q1(预热段模型退化对比)"], "Q3": ["Q2"], "Q4": ["Q2", "Q3", "附件2"]}
+    }
+  },
+  "events": {
+    "log": [
+      {"t": "2026-09-10T19:00", "event": "启动skill, 识别CUMCM 2026 A题 药材烘干"},
+      {"t": "2026-09-10T19:10", "event": "附件1/2/3数据schema扫描完成; 发现平台期与70h收缩锚点"},
+      {"t": "2026-09-10T19:15", "event": "文献检索: Luikov耦合模型/圆柱干燥模拟/收缩移动边界/二至丸干燥模拟等"},
+      {"t": "2026-09-10T19:20", "event": "差异化架构确定: 统一FVM+BDF2+Newton求解内核 + Landau变换Q4 + 数据驱动平台外推 + 附件2交叉验证"},
+      {"t": "2026-09-10T19:30", "event": "用户确认: 截止9/13 20:00, 3人分工, 直接开做Q1求解器"},
+      {"t": "2026-09-10T19:35", "event": "Stage 5-Q1 开始: solver_core.py 统一内核 (FVM顶点中心 + BDF2 + Newton + 解析解验证)"},
+      {"t": "2026-09-10T20:00", "event": "Q1 完成: 验证链全绿 (解析解误差~3e-6, 二阶收敛, 守恒偏差<1e-6); result1.xlsx + 表1/表2 + 3图 产出; 运行16.6s"},
+      {"t": "2026-09-10T20:05", "event": "Stage 5-Q2 开始: 附录3变物性双向耦合 (块GS迭代) + 变步长BDF2 (0.25/1/5s分档) + 平台期外推"},
+      {"t": "2026-09-10T21:10", "event": "Q2 完成 (57s跑完72h): result2.xlsx + 表3/表4; Q3 完成: t_end=207960s=57.77h, result3.xlsx + 表5"},
+      {"t": "2026-09-10T21:30", "event": "数值bug修复: Newton绝对容差→相对容差 (N=800舍入地板问题)"},
+      {"t": "2026-09-10T21:45", "event": "Q4 完成: ξ物质坐标收缩模型 (V(t)系数型) t_end=184200s=51.17h; 修复d(V·C)/dt伪压缩项; result4.xlsx + 表6"},
+      {"t": "2026-09-10T21:50", "event": "稳健性: dt减半Δt_end=0h; N=800 Δt_end=-0.18h, 表5差~1e-4; Stage 6 灵敏度启动"},
+      {"t": "2026-09-10T22:10", "event": "Q4 稳健性: dt减半Δt=0h, N=800 Δt=-0.017h, 表值差~3e-5; 收缩-失水一致性图生成"},
+      {"t": "2026-09-10T22:15", "event": "对比实验: 湿态冻结t_end=15.92h(低估72%), 干态冻结72h不达标 → 变物性必要性论证完成"},
+      {"t": "2026-09-10T22:20", "event": "Stage 8 准备: 摘要草稿(5段式, 真实数值) + 论文骨架(含图表清单/参考文献/三重验证) 写入 paper_workspace/"},
+      {"t": "2026-09-10T22:25", "event": "验证图生成: q1_validation.png (解析解对比) + q1_convergence.png (网格收敛); 共12张图"},
+      {"t": "2026-09-10T23:05", "event": "Stage 6 完成: OAT排序 Tbar(18.7h)>Dpre(10.4h)>Cbar(1.1h)>beta(1.2h)>h(0.02h); LHS t_end∈[48.37,67.50]h, 均值58.46±5.64h; 摘要段4+骨架§6回填"},
+      {"t": "2026-09-10T23:10", "event": "阶段5/6 全部完成. 剩余: Stage 7 评价(可复用骨架7节) + Stage 8 全文写作 + Stage 9 终审"},
+      {"t": "2026-09-11T00:30", "event": "用户要求重做图: Nature风格 + MATLAB + 三维网格. 产出: figures_matlab/ 8个.m脚本 (nm_setup统一风格+6图+run_all) + results/matlab/*.mat 数据 + figures/preview/ 同设计预览 (本机无MATLAB)"},
+      {"t": "2026-09-11T00:45", "event": "旧 matplotlib 图归档至 figures/archive/; 骨架图表清单与README同步更新"},
+      {"t": "2026-09-11T01:30", "event": "图 v2 升级 (Python预览+MATLAB同步): 摩尔纹修复 / fig1环境驱动线 / fig2多温度D-C+湿态冻结点 / fig3 0.15等值线+结束平面+colorbar / fig4 Δt双箭头标注+收缩平台阴影+一致性注释 / fig5守恒残差框 / fig6 ±σ波动带"}
+    ]
+  }
+}
