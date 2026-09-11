@@ -1,37 +1,84 @@
 % ============ 附录 ============
-\section{程序代码说明}
+\section{附录 A：温度场解析解的推导细节}
 
-全部程序以 Python 3 实现，依赖 numpy / scipy / pandas / openpyxl / sympy，运行于 Apple M4 Pro（12 核）。代码组织：
+\textbf{特征展开}。圆柱对流边界的特征值问题为
+$\lambda J_1(\lambda)=\mathrm{Bi}\,J_0(\lambda)$，
+$\mathrm{Bi}=hR/k=1.39$。取前 80 个正根 $\lambda_n$（在 Bessel 零点间二分
+求根），单位阶跃边界的响应为（系数 $A_n=2\,\mathrm{Bi}/[(\lambda_n^2+\mathrm{Bi}^2)J_0(\lambda_n)]$）
+\begin{equation}
+u_{step}(r,t)=1-\sum_{n=1}^{80}A_n J_0\!\left(\frac{\lambda_n r}{R}\right)e^{-\lambda_n^2\alpha t/R^2}
+\end{equation}
+
+\textbf{指数主项的显式求积}。由 Duhamel 原理
+$T=T_0+\int_0^t T_{env}'(s)\,u_{step}(r,t-s)\,ds$，将
+$T_{env}=T_\infty-\Delta T e^{-s/\tau}$ 代入，卷积对指数输入显式求积：
+\begin{equation}
+g_n(t)=\frac{e^{-t/\tau}-e^{-\lambda_n^2\alpha t/R^2}}{\tau\lambda_n^2\alpha/R^2-1}
+\end{equation}
+
+\textbf{残差修正}。环境残差 $\delta(t)$（辨识残差的保形样条）的贡献为
+\[
+\delta(t)-\sum A_n J_0(\lambda_n r/R)\,I_n(t)
+\]
+其中 $I_n$ 由指数滤波递归计算：
+\begin{equation}
+I_n(t+\Delta t)=e^{-\lambda_n^2\alpha\Delta t/R^2}I_n(t)
++\frac{\Delta t}{2}\Big[\delta'(t)\,e^{-\lambda_n^2\alpha\Delta t/R^2}+\delta'(t+\Delta t)\Big]
+\end{equation}
+
+\textbf{极限自检}。$\tau\to0^+$ 时主项退化为阶跃响应，与 Bessel 级数解
+逐点一致到 $5\times10^{-9}$；$t=0$ 时由完备性 $\sum A_n J_0=1$ 与残差项
+相消，$T=T_{env}(0)=T_0$。
+
+\section{附录 B：谱离散的技术细节}
+
+\textbf{扩散项的乘积链式形式}。展开形式 $C_{rr}+C_r/r$ 在轴心附近谱离散
+病态：半离散算子的特征值分析显示存在正实部伪模态（最大 $+6.7\times10^3$
+s$^{-1}$），时间推进不稳定；乘积链式形式中 $rD(C)C_r$ 在轴心处精确为零，
+算子特征值全部非正。后者为本文采用的形式。
+
+\textbf{边界条件的处理}。轴心与表面节点不作为时间积分状态。轴心对称条件
+$D_r[0]\cdot C=0$ 给出轴心值的线性表达式；表面 Robin 条件化为关于表面值
+$s$ 的标量方程 $D(s)[A(\mathbf{y})+B s]+\beta(s-C_{env})=0$，其中 $A,B$
+由内部节点值与微分矩阵的边界行块确定。该方程在 $D(s)\to0$ 时会出现一个
+靠近 $C_{env}$ 的附加解；本文以上一时刻表面值为初值做 Newton 迭代，沿
+解的连续分支跟踪，每次求值收敛到 $10^{-13}$，边界方程残差 $10^{-19}$
+量级。
+
+\textbf{几何守恒律}（问题四）。随体网格的控制体体积满足
+$dV_j/dt=(2\dot R/R)V_j$，离散实现中该恒等式逐点成立。
+
+\textbf{极限情形}。$R(t)$ 取常数时问题四退化回问题三；对固定半径
+$R=2$ cm 的退化计算与问题三结果一致。
+
+\section{附录 C：程序代码说明}
+
+全部程序以 Python 3 实现（numpy/scipy/pandas/openpyxl/sympy），文件名与
+功能对应如下：
 
 \begin{itemize}
-\item \texttt{env\_model.py}：烘房环境一阶惯性辨识（最小二乘 + PCHIP 残差 + 平台期统计）；
-\item \texttt{spectral\_core.py}：Chebyshev 谱配点统一内核（CGL 微分矩阵、乘性守恒形式、谱边界消元、Newton 续延、末位系数误差估计）；
-\item \texttt{q1\_analytic.py}：Duhamel 温度场闭式解析解（Robin 特征值二分求根 + 指数主项 + 残差递归卷积）；
-\item \texttt{ale\_core.py}：ALE 移动网格谱配点（时变度量 + GCL 检查）；
-\item \texttt{q1\_v2.py}--\texttt{q4\_v2.py}：四个子问题的驱动与输出（表 1--6、result1--4.xlsx）；
-\item \texttt{mms\_v2.py}：制造解验证（sympy 解析强迫项）；
-\item \texttt{sensitivity\_v2.py}：多进程并行灵敏度分析。
+\item \texttt{env\_model.py}：烘房环境一阶惯性辨识与平台外推；
+\item \texttt{spectral\_core.py}：谱配点统一离散（微分矩阵、边界条件求解、
+后验误差指示）；
+\item \texttt{q1\_analytic.py}：温度场解析解（特征值、主项、残差递归）；
+\item \texttt{ale\_core.py}：问题四随体网格离散；
+\item \texttt{q1\_solver.py}：问题一求解与表 1/2、result1.xlsx 输出；
+\item \texttt{q2\_solver.py}：问题二求解与表 3/4、result2.xlsx 输出；
+\item \texttt{q3\_drying\_time.py}：问题三判据扫描与表 5、result3.xlsx 输出；
+\item \texttt{q4\_shrinkage.py}：问题四求解与表 6、result4.xlsx 输出；
+\item \texttt{validation.py}：制造解验证与解析基准对比；
+\item \texttt{sensitivity.py}：灵敏度分析（多进程并行）；
+\item \texttt{figures.py}：论文图生成。
 \end{itemize}
 
-核心求解器（谱边界消元）关键实现摘录：
+核心求解框架（谱边界消元，问题一至三统一使用）：
 
 \begin{verbatim}
-# 表面 Robin 条件的标量根 (Newton 续延, 沿物理支跟踪)
-def _surf_moisture(self, t, y, T_surf=None):
-    c_env = self.C_env_fun(t)
-    A = self.DN0 * (-self.D0m @ y / self.D00) + self.DNm @ y
-    B = self.DN0 * (-self.D0N / self.D00) + self.DNN
-    def F(s):
-        Ds = self.D_fun(np.array([s]), Ts)[0]
-        return Ds * (A + B * s) + self.beta * (s - c_env)
-    def dF(s):
-        Ds = self.D_fun(np.array([s]), Ts)[0]
-        dD = self.dDdC_fun(np.array([s]), Ts)[0]
-        return dD * (A + B * s) + Ds * B + self.beta
-    s = self._surf_C if self._surf_C is not None else float(np.max(y))
-    ...  # Newton 迭代至 1e-13, 步出物理区间时折半
+# 每个右端求值:
+#   1. 由对称条件与 Robin 条件解出轴心值 u0 与表面值 s (Newton 续延)
+#   2. 拼合全场 C = [u0; y; s]
+#   3. 乘积链式散度:  f = (1/r) * Dr @ (r * D(C) * (Dr @ C))
+#   4. 返回内部节点 (x_1..x_{N-1}) 的 dC/dt, 交给自适应隐式 BDF 积分
 \end{verbatim}
 
-\section{结果文件}
-
-result1.xlsx（1800 行 $\times$ 21 列 $\times$ 2 表）、result2.xlsx（10800 行 $\times$ 21 列 $\times$ 2 表）、result3.xlsx（3470 行，60 s 至 208200 s）、result4.xlsx（3069 行，60 s 至 184140 s，末列“药材表面”，$r>R(t)$ 处留空）——均按附件 3 模板格式，4 位小数。
+问题四在该框架上附加随体网格：微分矩阵按 $R(t)$ 每步更新。

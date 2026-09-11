@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-sensitivity_v2.py — v2 方案灵敏度分析 (论文 6 节, 多进程并行版)
+sensitivity.py — v2 方案灵敏度分析 (论文 6 节, 多进程并行版)
 ============================================================
 方法: OAT 单参数 ±10% (QoI = t_end)
 参数: h, β, D 前置因子, 恒温段 T_bar, C_bar
 并行: 12 核 M4 Pro 上 10 个独立算例多进程并行 (~15 min, 串行需 ~2h)
 模型: 谱配点耦合 (N=96), 粗网格 1h + 48h 起 60s 细化 (正确重启状态)
-用法: python3 algorithms_v2/sensitivity_v2.py [--workers 8]
+用法: python3 algorithms_v2/sensitivity.py [--workers 8]
 """
 
 import sys, os
@@ -123,8 +123,8 @@ def main():
         rank[p][0 if s < 0 else 1] = d
     for p, (dlo, dhi) in sorted(rank.items(), key=lambda kv: -abs(kv[1][0] or 0) - abs(kv[1][1] or 0)):
         print(f'  {p}: |Δ(−10%)|+|Δ(+10%)| = {abs(dlo or 0) + abs(dhi or 0):.2f} h  ({dlo:+.2f} / {dhi:+.2f})')
-    np.save('results/sensitivity_v2.npy', np.array(out, dtype=object))
-    print('\nresults/sensitivity_v2.npy 已保存')
+    np.save('results/sensitivity.npy', np.array(out, dtype=object))
+    print('\nresults/sensitivity.npy 已保存')
 
 
 if __name__ == '__main__':

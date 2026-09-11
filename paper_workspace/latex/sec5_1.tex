@@ -1,122 +1,127 @@
 % ============ §5 模型的建立与求解 ============
 \section{模型的建立与求解}
 
-\subsection{问题一：Duhamel 解析 + 谱配点模型（SC-HTMT-A）}
+\subsection{问题一：常热物性瞬态传热与非线性水分扩散模型}
 
-\subsubsection{烘房环境的一阶惯性辨识}
+\subsubsection{烘房环境辨识与平台外推}
 
-附件 1 给出了烘干初期 0--4 h 内烘房温度与水分浓度的离散采样（60 s 间隔）。观察数据形状：温度自 28\,°C 单调爬升至约 50\,°C 后进入平台期，水分浓度自 0.0196 爬升至 0.05 后持平。这一形状与一阶惯性环节（加热/加湿系统的标准动态特性）完全一致，因此将环境辨识为
+附件 1 给出 0--4 h 烘房温度与水分浓度的采样（60 s 间隔），数据呈单调
+爬升至平台的一阶惯性环节形态（加热/加湿系统的标准动态特性），因此辨识为
+
 \begin{equation}
 T_{env}(t)=T_\infty-(T_\infty-T_0)\,e^{-t/\tau}
 \end{equation}
-其中 $T_\infty$ 为平台值，$T_0$ 为初始值，$\tau$ 为惯性时间常数。对附件 1 数据做最小二乘拟合得 $\tau=1776$ s，拟合优度 $R^2=0.9973$（水分浓度同理拟合，$\tau=2522$ s，$R^2=0.9944$）。拟合残差 $\delta(t)$ 用保形三次样条（PCHIP）光滑后叠加回模型，使辨识模型在数据点处与附件 1 完全一致（图~\ref{fig:env}）。对 $t\ge7200$ s 的平台期做统计：温度 $49.97\pm0.17$\,°C、水分浓度 $0.0500\pm0.0002$ kg/kg——噪声与均值之比小于 0.4\%，为恒温干燥段（$t>4$ h）的边界条件外推提供了统计依据（问题二使用）。
+
+最小二乘拟合得 $\tau=1776$ s、$R^2=0.9973$（水分浓度同理，$\tau=2522$ s、
+$R^2=0.9944$）；拟合残差用保形三次样条光滑后叠加，使模型在数据点处与附件 1
+一致（图~\ref{fig:env}）。$t\ge7200$ s 平台期统计为 $49.97\pm0.17$\,°C 与
+$0.0500\pm0.0002$ kg/kg，噪声与均值之比小于 0.4\%，据此将 $t>4$ h 的
+边界条件外推为恒值（问题二使用）。环境辨识的另一个用途是：指数边界下
+温度场存在闭式解析解，可作为数值求解器的独立基准。
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{fig6_env_model.png}
-\caption{烘房环境的一阶惯性辨识：数据点与辨识模型（含残差），阴影区为平台期统计区间。左：温度（$R^2=0.9973$，$\tau=1776$ s）；右：水分浓度（$R^2=0.9944$，$\tau=2522$ s）。}
+\caption{烘房环境的一阶惯性辨识。数据点、辨识模型与平台期统计区间（阴影）。
+左：温度（$R^2=0.9973$，$\tau=1776$ s）；右：水分浓度（$R^2=0.9944$，
+$\tau=2522$ s）。}
 \label{fig:env}
 \end{figure}
 
-一阶惯性辨识的意义在于：\textbf{(i)} 离散数据被压缩为三个物理参数，边界条件光滑且物理可解释；\textbf{(ii)} 指数边界下温度场存在闭式解析解（5.1.2 节）；\textbf{(iii)} 平台期外推有数据统计支撑而非随意假设。
-
-\subsubsection{温度场的 Duhamel 闭式解析解}
+\subsubsection{温度场解析解}
 
 预热阶段温度场满足常物性轴对称热传导方程
+
 \begin{equation}
 \rho c_p\frac{\partial T}{\partial t}=\frac{k}{r}\frac{\partial}{\partial r}\left(r\frac{\partial T}{\partial r}\right)
 \end{equation}
-初始条件与边界条件为
 \begin{equation}
-T(r,0)=T_0,\quad \left.\frac{\partial T}{\partial r}\right|_{r=0}=0,\quad
+T(r,0)=T_0,\qquad \left.\frac{\partial T}{\partial r}\right|_{r=0}=0,\qquad
 -\left.k\frac{\partial T}{\partial r}\right|_{r=R}=h\big(T(R,t)-T_{env}(t)\big)
 \end{equation}
-其中 $\rho=820$ kg/m$^3$、$c_p=2600$ J/(kg·K)、$k=0.36$ W/(m·K)、$h=25$ W/(m$^2$·K)（附录 2）。
 
-\textbf{特征函数展开}。圆柱对流边界的特征值问题为
-\begin{equation}
-\lambda J_1(\lambda)=\mathrm{Bi}\,J_0(\lambda),\qquad \mathrm{Bi}=hR/k=1.39
-\end{equation}
-取前 80 个正根 $\lambda_n$（在 Bessel 零点间二分求根，残差小于 $10^{-14}$），单位阶跃边界的响应为
-\begin{equation}
-u_{step}(r,t)=1-\sum_{n=1}^{80}A_n J_0\!\left(\frac{\lambda_n r}{R}\right)e^{-\lambda_n^2\alpha t/R^2},\quad
-A_n=\frac{2\,\mathrm{Bi}}{(\lambda_n^2+\mathrm{Bi}^2)J_0(\lambda_n)}
-\end{equation}
-其中 $\alpha=k/(\rho c_p)=1.69\times10^{-7}$ m$^2$/s。
+（$\rho=820$ kg/m$^3$、$c_p=2600$ J/(kg·K)、$k=0.36$ W/(m·K)、
+$h=25$ W/(m$^2$·K)，附录 2）。对流边界的特征值问题为
+$\lambda J_1(\lambda)=\mathrm{Bi}\,J_0(\lambda)$，$\mathrm{Bi}=hR/k=1.39$。
+对该特征展开应用 Duhamel 原理（推导过程见附录 A），指数边界主项可显式求积，
+残差经递归卷积修正，最终
 
-\textbf{Duhamel 卷积的显式求值}。由 Duhamel 原理，任意时变边界下的解为 $T=T_0+\int_0^t T_{env}'(s)\,u_{step}(r,t-s)\,ds$。将辨识模型的主项代入，卷积对指数输入可显式求积，得到闭式解
 \begin{equation}
-T_{main}(r,t)=T_{fit}(t)-\Delta T\sum_{n=1}^{80}A_n J_0\!\left(\frac{\lambda_n r}{R}\right)g_n(t),\quad
-g_n(t)=\frac{e^{-t/\tau}-e^{-\lambda_n^2\alpha t/R^2}}{\tau\lambda_n^2\alpha/R^2-1}
+T(r,t)=T_{fit}(t)-\Delta T\sum_{n=1}^{80}A_n J_0\!\left(\frac{\lambda_n r}{R}\right)g_n(t)
++\delta(t)-\sum_{n=1}^{80}A_n J_0\!\left(\frac{\lambda_n r}{R}\right)I_n(t)
 \end{equation}
-其中 $T_{fit}(t)=T_\infty-\Delta T e^{-t/\tau}$，$\Delta T=T_\infty-T_0$。残差 $\delta(t)$ 的贡献由指数滤波递归卷积计算
-\begin{equation}
-T_{res}(r,t)=\delta(t)-\sum_{n=1}^{80}A_n J_0\!\left(\frac{\lambda_n r}{R}\right)I_n(t)
-\end{equation}
-其中 $I_n$ 由指数滤波递归计算：
-\begin{equation}
-I_n(t+\Delta t)=e^{-\lambda_n^2\alpha\Delta t/R^2}I_n(t)
-+\frac{\Delta t}{2}\Big[\delta'(t)\,e^{-\lambda_n^2\alpha\Delta t/R^2}+\delta'(t+\Delta t)\Big]
-\end{equation}
-最终温度场 $T=T_{main}+T_{res}$。\textbf{极限自检}：$\tau\to0^+$ 时上式精确退化为阶跃响应（与 Bessel 级数解析解逐点一致到 $5\times10^{-9}$）；$t=0$ 时 $T=T_{env}(0)=T_0$（完备性 $\sum A_nJ_0=1$ 与残差项相互抵消）——两处极限验证了公式的正确性。该解是\textbf{准解析的}：对任意输出时刻无需时间步进，1800 个时刻的求解耗时在毫秒量级，且 4 位小数精度由级数截断误差（末项 $10^{-9}$ 量级）保证。
+
+其中 $T_{fit}(t)=T_\infty-\Delta T\,e^{-t/\tau}$ 为辨识主项，$\delta(t)$ 为
+环境残差，$g_n$、$I_n$ 与系数 $A_n$ 的定义见附录 A。该式对任意输出时刻
+无需时间步进，级数截断误差在 $10^{-9}$ 量级，满足 4 位小数要求；$\tau\to0$
+时退化为阶跃边界响应，与 Bessel 级数解逐点一致到 $5\times10^{-9}$。
+这一解析解同时作为谱配点求解器的独立基准（图~\ref{fig:duhamel}）。
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{fig2_duhamel.png}
-\caption{温度场解析解与谱配点解的互证（a）与逐点偏差（b）：偏差最大 $1.6\times10^{-4}$\,°C，两套独立求解方式互相印证。}
+\caption{温度场解析解与谱配点解的对比（a）及逐点偏差（b）。最大偏差
+$1.6\times10^{-4}$\,°C，两种求解方式相互印证。}
 \label{fig:duhamel}
 \end{figure}
 
-\subsubsection{水分场的 Chebyshev 谱配点求解}
+\subsubsection{水分场与统一数值离散}
 
-水分场满足非线性扩散方程（$D$ 随 $C$ 变化，弱耦合）
+水分场满足非线性扩散方程
+
 \begin{equation}
-\frac{\partial C}{\partial t}=\frac{1}{r}\frac{\partial}{\partial r}\left(r\,D(C)\frac{\partial C}{\partial r}\right),\quad
+\frac{\partial C}{\partial t}=\frac{1}{r}\frac{\partial}{\partial r}\left(r\,D(C)\frac{\partial C}{\partial r}\right),\qquad
 D(C)=7\times10^{-9}e^{-0.89/C}
 \end{equation}
-初始条件与边界条件为
-\begin{equation}
-C(r,0)=2.55,\qquad
--\left.D\frac{\partial C}{\partial r}\right|_{r=R}=\beta\big(C(R,t)-C_{env}(t)\big)
-\end{equation}
-其中 $\beta=8\times10^{-7}$ m/s（附录 2）。非线性源于 $D(C)$ 的指数依赖，该方程无解析解，采用 Chebyshev 谱配点求解——这一离散框架同时是问题二至问题四的统一数值内核，此处给出其全部构造。
 
-\textbf{空间离散}。取 Chebyshev--Gauss--Lobatto 配点 $x_j=\cos(j\pi/N)$，$j=0,\ldots,N$，经 $r=R(1-x)/2$ 映射至 $[0,R]$（$x=1$ 对应轴心 $r=0$，$x=-1$ 对应表面 $r=R$）。一阶微分矩阵 $D$ 由 Trefethen 公式给出\cite{trefethen}，$\partial/\partial r=-(2/R)D$。
+初值 $C(r,0)=2.55$，表面条件 $-D\,\partial C/\partial r=\beta(C-C_{env})$，
+$\beta=8\times10^{-7}$ m/s。温度方程与水分方程没有直接的双向作用（热物性
+为常数，$D$ 不含温度），水分方程经 $D(C)$ 单向依赖于自身场。
 
-\textbf{乘性守恒形式}。方程不采用展开形式 $C_{rr}+C_r/r$，而是将 $r\,D(C)\,C_r$ 作为整体做微分（乘积链式离散）：
-\begin{equation}
-\frac{dC_j}{dt}=\frac{1}{r_j}\left[\frac{\partial}{\partial r}\big(r D(C) C_r\big)\right]_{x=x_j},\quad j=1,\ldots,N-1
-\end{equation}
-原因在于：展开形式在轴心附近谱离散病态——对半离散算子的特征值分析显示存在正实部伪模态（最大 $+6.7\times10^3$ s$^{-1}$），导致时间推进数值不稳定；乘性形式中 $rD(C)C_r$ 在轴心处精确为零，算子全部特征值非正，数值稳定。该处理与极坐标谱方法的标准做法一致\cite{trefethen}。
-
-\textbf{谱边界消元}。轴心节点与表面节点不作为时间推进的状态变量，而是在每次右端求值中由边界条件精确解出：轴心对称条件 $D_r[0]\cdot C=0$ 给出 $C_0$ 的线性表达式；表面 Robin 条件化为关于表面值 $s$ 的标量方程
-\begin{equation}
-D(s)\big[A(\mathbf{y})+B\,s\big]+\beta\big(s-C_{env}(t)\big)=0
-\end{equation}
-其中 $A,B$ 由内部节点值 $\mathbf{y}$ 与微分矩阵的边界行块确定。注意到 $D(s)\to0$（$s$ 小时）会使方程退化出“干支”伪根 $s\approx C_{env}$，与物理支（表面值连续地自内部剖面延伸）并存。本文用 \textbf{Newton 续延}沿物理支跟踪：以上一时刻的表面值为初值迭代（30 次内收敛到 $10^{-13}$），保证分支正确性；边界残差因此达到 $10^{-19}$ 量级——边界条件是精确满足的。
-
-\textbf{时间推进}。半离散系统 $\dot{\mathbf{y}}=\mathbf{f}(t,\mathbf{y})$（$N-1$ 维，$N=48$）用自适应隐式 BDF（变阶变步长，相对容差 $10^{-9}$）积分至 1800 s，按 1 s 间隔输出。
-
-\textbf{后验误差估计}。末位 Chebyshev 系数 $|a_N|$ 给出谱精度指示\cite{gasparin}：本问解在 $t=1800$ s 时 $|a_{48}|=5.1\times10^{-13}$——远低于 4 位小数的精度要求（图~\ref{fig:spectral}），同时为问题二的谱分辨率讨论提供了判据工具。
+空间离散采用 Chebyshev--Gauss--Lobatto 谱配点（$N$ 个模式，$r=R(1-x)/2$
+映射），一阶微分矩阵按 Trefethen 公式给出\cite{trefethen}；扩散项按乘积
+链式离散，即对 $rD(C)\,C_r$ 整体微分，该形式在轴心处保持正则（展开形式
+$C_{rr}+C_r/r$ 在轴心附近的谱离散不稳定，具体分析见附录 B）。轴心与表面
+两个边界节点不作为时间积分状态，而在每次右端求值中由对称条件与 Robin
+条件解出（边界方程求解与选支处理的细节见附录 B）。半离散系统用自适应
+隐式 BDF 积分，末位 Chebyshev 系数作为后验误差指示\cite{gasparin}：
+问题一解在 $t=1800$ s 时末位系数 $5.1\times10^{-13}$（图~\ref{fig:spectral}），
+远低于 4 位小数阈值。该离散框架为问题二至四的统一求解内核。
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.62\textwidth]{fig1_spectral.png}
-\caption{谱系数瀑布图：Chebyshev 系数随模式数指数衰减，末位系数 $5\times10^{-13}$ 远低于 4 位小数精度阈值（$5\times10^{-5}$）——谱方法指数收敛的证据。}
+\caption{谱系数随模式数指数衰减（$t=1800$ s）。末位系数 $5\times10^{-13}$
+远低于 4 位小数精度阈值 $5\times10^{-5}$。}
 \label{fig:spectral}
 \end{figure}
 
-\subsubsection{结果与验证}
+\subsubsection{结果}
 
-\textbf{三重验证}：（1）\textbf{解析解互证}——对同一环境模型，谱配点温度解与 5.1.2 的 Duhamel 解析解逐点对比，最大偏差 $1.6\times10^{-4}$\,°C（图~\ref{fig:duhamel}）；（2）\textbf{Bessel 级数基准}——常扩散系数情形下谱解与 Bessel 级数解析解偏差 $9.5\times10^{-9}$；（3）\textbf{制造解验证（MMS）}——对非线性方程构造光滑制造解并反推解析强迫项\cite{roache}，谱解与制造解偏差 $6.1\times10^{-9}$，且随谱模式数 $N\ge24$ 进入时间误差地板、随时间容差线性衰减（详见 6.1 节）。
-
-\input{tab12}
+表~\ref{tab:q1t}、\ref{tab:q1c}（分别按题目表 1、表 2 格式输出，完整数据
+见 result1.xlsx）：30 min 内表面温度由 28.00\,°C 升至 36.79\,°C
+（100 s 时 28.18\,°C），中心升至 33.58\,°C；表面含水率由 2.5500 降至
+1.5102 kg/kg，中心保持 2.5500 kg/kg。图~\ref{fig:preheat} 以二维热图
+与径向剖面给出时空演化：温度场整体爬升并形成径向梯度，水分仅在表面薄层
+下降。这与无量纲估计一致（$\mathrm{Fo}_T=0.76$、$\mathrm{Fo}_m=0.022$）：
+预热阶段工艺目标是快速均温、尽量保持内部水分。
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{fig3_preheat.png}
-\caption{预热阶段温度场（左）与水分浓度场（右）的时空演化：温度场径向梯度清晰可见并整体爬升；水分仅在表面薄层下降，中心保持 2.5500 kg/kg——“快速均温、锁住水分”的工艺意图。}
+\caption{预热阶段时空演化（二维热图，上）与典型时刻径向剖面（下）。
+左列温度，右列水分浓度。}
 \label{fig:preheat}
 \end{figure}
 
-\textbf{结果}（表 1、表 2，完整数据见 result1.xlsx）：30 min 内药材表面温度由 28.00\,°C 升至 36.79\,°C（100 s 时 28.18\,°C），中心温度升至 33.58\,°C——温度场径向梯度清晰可见；表面含水率由 2.5500 降至 1.5102 kg/kg，而中心含水率保持 2.5500 kg/kg 不变（图~\ref{fig:preheat}）。这一结果定量刻画了预热阶段的工艺意图：\textbf{快速均温、锁住水分}——无量纲预判 $\mathrm{Fo}_T=0.76$、$\mathrm{Fo}_m=0.022$ 与此完全一致。与独立实现的有限体积法求解器（400 节点，网格收敛验证后）交叉对比，表 1、表 2 逐项一致到 4 位小数。
+\input{tab12}
+
+\subsubsection{验证}
+
+\begin{enumerate}
+\item 解析基准：谱配点温度解与 5.1.2 解析解逐点对比，最大偏差
+$1.6\times10^{-4}$\,°C（图~\ref{fig:duhamel}）；
+\item 常扩散系数情形的谱解与 Bessel 级数解偏差 $9.5\times10^{-9}$；
+\item 独立算法交叉验证：与有限体积法求解器（400 节点，网格收敛验证后）
+对比，表~\ref{tab:q1t}、\ref{tab:q1c} 逐项 4 位小数一致。
+\end{enumerate}

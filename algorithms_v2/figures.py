@@ -52,7 +52,7 @@ def save(fig, name):
 # ============================================================
 def fig1_spectral():
     from spectral_core import RadialField, cheb_coeffs
-    from q1_v2 import make_field
+    from q1_solver import make_field
     from env_model import load_env_models
     T_env, C_env, _ = load_env_models()
     fld = make_field(C_env)
@@ -76,7 +76,7 @@ def fig1_spectral():
 # fig2 Duhamel 解析 vs 谱 — "互相印证到什么程度"
 # ============================================================
 def fig2_duhamel():
-    from q1_v2 import solve_temperature, make_field
+    from q1_solver import solve_temperature, make_field
     from env_model import load_env_models
     from scipy.integrate import solve_ivp
     T_env, C_env, _ = load_env_models()
@@ -120,25 +120,28 @@ def fig3_preheat():
     C = pd.read_excel(xl1, '水分浓度', header=0, index_col=0).values
     t = pd.read_excel(xl1, '温度', header=0, index_col=0).index.values
     r = pd.read_excel(xl1, '温度', header=0, index_col=0).columns.values.astype(float)
-    fig = plt.figure(figsize=(9.6, 4.0))
-    for Z, cb, pos, ttl in ((T, 'T / °C', 121, '温度场'),
-                            (C, 'C / (kg·kg⁻¹)', 122, '水分浓度场')):
-        ax = fig.add_subplot(pos, projection='3d')
-        RR, TT = np.meshgrid(r, t[::10] / 60.0)
-        surf = ax.plot_surface(RR, TT, Z[::10], cmap='viridis', linewidth=0,
-                               rstride=1, cstride=1, antialiased=False)
-        fig.colorbar(surf, ax=ax, shrink=0.6, pad=0.08, label=cb)
-        ax.view_init(elev=28, azim=-40)
-        ax.set_xlabel('r / cm', fontsize=7); ax.set_ylabel('t / min', fontsize=7)
-        ax.set_zlabel(cb, fontsize=7); ax.tick_params(labelsize=6)
-        for a in (ax.xaxis, ax.yaxis, ax.zaxis):
-            a.set_pane_color((1, 1, 1, 0))
-        ax.set_title(ttl, fontsize=8)
+    fig, axes = plt.subplots(2, 2, figsize=(9.6, 6.0),
+                             gridspec_kw={'height_ratios': [2.2, 1.2]})
+    for ax, Z, cb, ttl in ((axes[0, 0], T, 'T / °C', '温度场'),
+                           (axes[0, 1], C, 'C / (kg·kg⁻¹)', '水分浓度场')):
+        im = ax.pcolormesh(t / 60.0, r, Z.T, cmap='viridis', shading='auto')
+        fig.colorbar(im, ax=ax, label=cb, shrink=0.85)
+        ax.set_xlabel('t / min', fontsize=9); ax.set_ylabel('r / cm', fontsize=9)
+        ax.set_title(ttl, fontsize=9)
+        ax.tick_params(width=0.6)
+    for tt, cc in ((100, PAL[1]), (600, PAL[4]), (1800, PAL[0])):
+        i = int(tt) - 1
+        axes[1, 0].plot(r, T[i], color=cc, lw=1.2, label=f't = {tt} s')
+        axes[1, 1].plot(r, C[i], color=cc, lw=1.2, label=f't = {tt} s')
+    for ax, yl, ttl in ((axes[1, 0], 'T / °C', '温度径向剖面'),
+                        (axes[1, 1], 'C / (kg·kg⁻¹)', '水分径向剖面')):
+        ax.set_xlabel('r / cm', fontsize=9); ax.set_ylabel(yl, fontsize=9)
+        ax.set_title(ttl, fontsize=9)
+        ax.grid(**GRID); ax.tick_params(width=0.6)
+        ax.legend(fontsize=7)
     fig.tight_layout(); save(fig, 'fig3_preheat')
 
 
-# ============================================================
-# fig4 全流程 3D + 干燥锋面轨迹 — "干燥如何由表及里推进"
 # ============================================================
 def fig4_front():
     d = np.load('results/q2_v2_full.npz')
@@ -164,6 +167,21 @@ def fig4_front():
     for lvl, c in ((0.5, PAL[0]), (0.15, PAL[1])):
         r_front = []
         t_front = []
+def fig4_front():
+    d = np.load('results/q2_v2_full.npz')
+    t, C = d['t'] / 3600.0, d['C']
+    r = np.arange(0.0, 2.01, 0.1)
+    fig = plt.figure(figsize=(9.6, 4.0))
+    ax = fig.add_subplot(121)
+    im = ax.pcolormesh(t, r, C.T, cmap='viridis', shading='auto')
+    fig.colorbar(im, ax=ax, label='C / (kg·kg⁻¹)', shrink=0.85)
+    ax.contour(t, r, C.T, levels=[0.15], colors=PAL[1], linewidths=1.3)
+    ax.set_xlabel('t / h', fontsize=9); ax.set_ylabel('r / cm', fontsize=9)
+    ax.set_title('全流程水分浓度 (红线: C=0.15)', fontsize=9)
+    ax.tick_params(width=0.6)
+    ax2 = fig.add_subplot(122)
+    for lvl, c in ((0.5, PAL[0]), (0.15, PAL[1])):
+        r_front, t_front = [], []
         for i, tt in enumerate(t):
             prof = C[i]
             below = np.where(prof <= lvl)[0]
@@ -175,41 +193,14 @@ def fig4_front():
                     rf = r[0]
                 r_front.append(rf); t_front.append(tt)
         ax2.plot(t_front, r_front, color=c, lw=1.4, label=f'C = {lvl} 锋面')
-    # √t 参考
     ax2.plot(t[::10], 2.0 - 0.16 * np.sqrt(t[::10] / 24.0), 'k--', lw=0.9, label='√t 参考律')
-    style2d(ax2, 't / h', '锋面位置 / cm')
-    ax2.set_ylim(0, 2.1); ax2.legend(fontsize=7)
-    ax2.set_title('干燥锋面由表及里的推进', fontsize=8)
+    ax2.set_xlabel('t / h', fontsize=9); ax2.set_ylabel('锋面位置 / cm', fontsize=9)
+    ax2.set_ylim(0, 2.1); ax2.legend(fontsize=7.5)
+    ax2.set_title('干燥锋面由表及里的推进', fontsize=9)
+    ax2.grid(**GRID); ax2.tick_params(width=0.6)
     fig.tight_layout(); save(fig, 'fig4_front')
 
 
-# ============================================================
-# fig5 局部 Luikov 数相图 — "什么在控制干燥"
-# ============================================================
-def fig5_lu():
-    d = np.load('results/q2_v2_full.npz')
-    t, C, T = d['t'] / 3600.0, d['C'], d['T']
-    r = np.arange(0.0, 2.01, 0.1)
-    alpha = (0.21 + 0.38 * C / (C + 1)) / ((650 + 128 * C) * (1450 + 2736 * C / (C + 1)))
-    D = 2.4e-3 * np.exp(-0.45 / np.maximum(C, 1e-6)) * np.exp(-3850.0 / (T + 273.15))
-    Lu = alpha / D
-    fig, ax = plt.subplots(figsize=(5.6, 3.6))
-    im = ax.pcolormesh(t, r, Lu.T, cmap='inferno_r', norm=matplotlib.colors.LogNorm(),
-                       shading='auto')
-    cb = fig.colorbar(im, ax=ax, label='Lu = α / D')
-    ax.contour(t, r, Lu.T, levels=[100, 1000, 10000], colors='white',
-               linewidths=0.7, linestyles='--')
-    ax.text(30, 0.3, 'Lu = 10²', color='white', fontsize=6)
-    ax.text(60, 1.2, 'Lu = 10⁴', color='white', fontsize=6)
-    style2d(ax, 't / h', 'r / cm')
-    ax.set_title('局部 Luikov 数演化 (耦合强度: 湿态强耦合 → 干态退耦)', fontsize=8)
-    fig.tight_layout(); save(fig, 'fig5_lu')
-
-
-# ============================================================
-# fig6 环境辨识 — "边界条件凭什么这样给"
-# ============================================================
-def fig6_env_model():
     from env_model import load_env_models
     T_env, C_env, diag = load_env_models()
     df = pd.read_excel('A题/附件/附件1.xlsx')
@@ -232,6 +223,31 @@ def fig6_env_model():
     panel(axes[0], 'a'); panel(axes[1], 'b')
     fig.tight_layout(); save(fig, 'fig6_env_model')
 
+
+
+# ============================================================
+# fig6 环境辨识 — "边界条件凭什么这样给"
+# ============================================================
+def fig6_env_model():
+    from env_model import load_env_models
+    T_env, C_env, diag = load_env_models()
+    df = pd.read_excel('A题/附件/附件1.xlsx')
+    t_d = df['时间'].values.astype(float)
+    fig, axes = plt.subplots(1, 2, figsize=(9.6, 3.4))
+    for ax, env, y_d, name in (
+            (axes[0], T_env, df['温度'].values, '温度'),
+            (axes[1], C_env, df['水分浓度'].values, '水分浓度')):
+        ax.axvspan(7200, 14400, color='#999', alpha=0.10)
+        ax.plot(t_d / 3600, y_d, '.', ms=2, color='#999', label='附件1 数据')
+        tt = np.linspace(0, 14400, 500)
+        ax.plot(tt / 3600, [env(x) for x in tt], color=PAL[0], lw=1.3,
+                label='一阶惯性 + 残差模型')
+        ax.plot([7200 / 3600, 14400 / 3600], [env(14400)] * 2, '--', color=PAL[1], lw=1.1,
+                label=f'平台外推 ({env(14400):.3f})')
+        ax.set_xlabel('t / h', fontsize=9); ax.set_ylabel(f'烘房{name}', fontsize=9)
+        ax.legend(fontsize=7); ax.grid(**GRID); ax.tick_params(width=0.6)
+    panel(axes[0], 'a'); panel(axes[1], 'b')
+    fig.tight_layout(); save(fig, 'fig6_env_model')
 
 # ============================================================
 # fig7 MMS — "求解器可不可信"
@@ -258,13 +274,34 @@ def fig7_mms():
     fig.tight_layout(); save(fig, 'fig7_mms')
 
 
+def fig5_lu():
+    d = np.load('results/q2_v2_full.npz')
+    t, C, T = d['t'] / 3600.0, d['C'], d['T']
+    r = np.arange(0.0, 2.01, 0.1)
+    alpha = (0.21 + 0.38 * C / (C + 1)) / ((650 + 128 * C) * (1450 + 2736 * C / (C + 1)))
+    D = 2.4e-3 * np.exp(-0.45 / np.maximum(C, 1e-6)) * np.exp(-3850.0 / (T + 273.15))
+    Gam = alpha / D
+    fig, ax = plt.subplots(figsize=(5.6, 3.6))
+    im = ax.pcolormesh(t, r, Gam.T, cmap='inferno_r',
+                       norm=matplotlib.colors.LogNorm(), shading='auto')
+    cb = fig.colorbar(im, ax=ax, label='Γ = α / D')
+    ax.contour(t, r, Gam.T, levels=[100, 1000, 10000], colors='white',
+               linewidths=0.7, linestyles='--')
+    ax.text(30, 0.3, 'Γ = 10²', color='white', fontsize=7)
+    ax.text(60, 1.2, 'Γ = 10⁴', color='white', fontsize=7)
+    ax.set_xlabel('t / h', fontsize=9); ax.set_ylabel('r / cm', fontsize=9)
+    ax.set_title('时间尺度比 Γ = α/D 的时空分布', fontsize=9)
+    ax.tick_params(width=0.6)
+    fig.tight_layout(); save(fig, 'fig5_lu')
+
+
 # ============================================================
-# fig8 判据跨越放大 — "t_end 多精确"
+# fig8 判据跨越 — "t_end 多精确"
 # ============================================================
 def fig8_criterion():
     d = np.load('results/q2_v2_full.npz')
     t, C = d['t'] / 3600.0, d['C']
-    t_end = 208200 / 3600.0      # 57.83 h (N=128 收敛值)
+    t_end = 208200 / 3600.0
     fig, ax = plt.subplots(figsize=(6.2, 3.4))
     ax.plot(t, C[:, 0], color=PAL[0], lw=1.5, label='中心 r = 0')
     ax.plot(t, C[:, -1], color=PAL[1], lw=1.5, label='表面 r = 2 cm')
