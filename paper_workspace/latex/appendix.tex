@@ -1,0 +1,37 @@
+% ============ 附录 ============
+\section{程序代码说明}
+
+全部程序以 Python 3 实现，依赖 numpy / scipy / pandas / openpyxl / sympy，运行于 Apple M4 Pro（12 核）。代码组织：
+
+\begin{itemize}
+\item \texttt{env\_model.py}：烘房环境一阶惯性辨识（最小二乘 + PCHIP 残差 + 平台期统计）；
+\item \texttt{spectral\_core.py}：Chebyshev 谱配点统一内核（CGL 微分矩阵、乘性守恒形式、谱边界消元、Newton 续延、末位系数误差估计）；
+\item \texttt{q1\_analytic.py}：Duhamel 温度场闭式解析解（Robin 特征值二分求根 + 指数主项 + 残差递归卷积）；
+\item \texttt{ale\_core.py}：ALE 移动网格谱配点（时变度量 + GCL 检查）；
+\item \texttt{q1\_v2.py}--\texttt{q4\_v2.py}：四个子问题的驱动与输出（表 1--6、result1--4.xlsx）；
+\item \texttt{mms\_v2.py}：制造解验证（sympy 解析强迫项）；
+\item \texttt{sensitivity\_v2.py}：多进程并行灵敏度分析。
+\end{itemize}
+
+核心求解器（谱边界消元）关键实现摘录：
+
+\begin{verbatim}
+# 表面 Robin 条件的标量根 (Newton 续延, 沿物理支跟踪)
+def _surf_moisture(self, t, y, T_surf=None):
+    c_env = self.C_env_fun(t)
+    A = self.DN0 * (-self.D0m @ y / self.D00) + self.DNm @ y
+    B = self.DN0 * (-self.D0N / self.D00) + self.DNN
+    def F(s):
+        Ds = self.D_fun(np.array([s]), Ts)[0]
+        return Ds * (A + B * s) + self.beta * (s - c_env)
+    def dF(s):
+        Ds = self.D_fun(np.array([s]), Ts)[0]
+        dD = self.dDdC_fun(np.array([s]), Ts)[0]
+        return dD * (A + B * s) + Ds * B + self.beta
+    s = self._surf_C if self._surf_C is not None else float(np.max(y))
+    ...  # Newton 迭代至 1e-13, 步出物理区间时折半
+\end{verbatim}
+
+\section{结果文件}
+
+result1.xlsx（1800 行 $\times$ 21 列 $\times$ 2 表）、result2.xlsx（10800 行 $\times$ 21 列 $\times$ 2 表）、result3.xlsx（3470 行，60 s 至 208200 s）、result4.xlsx（3069 行，60 s 至 184140 s，末列“药材表面”，$r>R(t)$ 处留空）——均按附件 3 模板格式，4 位小数。
