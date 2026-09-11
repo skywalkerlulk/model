@@ -22,7 +22,7 @@ from spectral_core import RadialField
 from env_model import load_env_models
 
 R = 0.02
-N = 96
+N = int(os.environ.get('SENS_N', '96'))
 T_FULL = 259200.0
 THRESHOLD = 0.15
 BASE = dict(h=25.0, beta=8e-7, Dpre=2.4e-3, Tbar=49.969, Cbar=0.0499)
