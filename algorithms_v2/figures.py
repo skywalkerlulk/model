@@ -119,6 +119,77 @@ def fig0_cylinder():
     fig.tight_layout(); save(fig, 'fig0_cylinder')
 
 
+
+# ============================================================
+# fig10 tornado (token 热力图风格升级版) — "参数主导性"
+# ============================================================
+def _shade(color, k, n):
+    """token 色块深浅交替 (Claude token heatmap 风格)"""
+    import matplotlib.colors as mcolors
+    base = mcolors.to_rgb(color)
+    f = 0.72 + 0.28 * ((k % 3) / 2.0)          # 深浅三档循环
+    return tuple(min(1.0, x * f + (1 - f) * 0.12) for x in base)
+
+
+def fig10_tornado():
+    from matplotlib.patches import Rectangle
+    out = np.load('results/sensitivity_v2.npy', allow_pickle=True)
+    rank = {}
+    for p_, s_, d_ in out:
+        rank.setdefault(p_, [None, None])
+        rank[p_][0 if s_ < 0 else 1] = d_
+    labels = {'h': 'h  对流换热系数', 'beta': 'β  对流传质系数',
+              'Dpre': 'D 前置因子', 'Tbar': 'T̄  恒温段温度', 'Cbar': 'C̄  恒温段湿度'}
+    params = sorted(rank.items(), key=lambda kv: abs(kv[1][0] or 0) + abs(kv[1][1] or 0))
+
+    fig, ax = plt.subplots(figsize=(7.4, 4.4))
+    block_w, bar_h = 0.45, 0.34
+    for i, (p_, (dlo, dhi)) in enumerate(params):
+        y = len(params) - 1 - i
+        ax.text(-0.6, y, labels[p_], fontsize=8.5, va='center', ha='right')
+        for d_, c_ in ((dlo, PAL[1]), (dhi, PAL[0])):
+            if d_ is None:
+                continue
+            n_ = max(1, int(round(abs(d_) / block_w)))
+            sgn = 1 if d_ >= 0 else -1
+            for k in range(n_):
+                x0 = k * block_w * sgn
+                ax.add_patch(Rectangle((x0, y - bar_h / 2), sgn * block_w * 0.9, bar_h,
+                                       facecolor=_shade(c_, k, n_),
+                                       edgecolor='none', zorder=3))
+            # 数值标注
+            ax.annotate(f'{d_:+.1f} h',
+                        xy=(d_, y), xytext=(sgn * 0.5, 0),
+                        textcoords='offset points', fontsize=7.5, va='center',
+                        ha='left' if sgn > 0 else 'right',
+                        color=mcolors_rgb_dark(c_))
+        # 分组分隔
+        ax.plot([-14.5, 14.5], [y - 0.42, y - 0.42], color='#DDD', lw=0.5, zorder=1)
+    ax.axvline(0, color='#333', lw=0.9, zorder=2)
+    ax.set_xlim(-13.2, 13.2)
+    ax.set_ylim(-0.5, len(params) - 0.2)
+    ax.set_yticks([])
+    ax.set_xlabel('烘干时长变化 Δt_end / h', fontsize=9)
+    ax.set_title('OAT 灵敏度 ±10%（token 色块 = 烘干时长变化，红=延长 / 蓝=缩短）', fontsize=9)
+    ax.tick_params(width=0.6)
+    # 装饰: 底部 token 热力图条 (点缀, 与主体同色系)
+    import random as _rd
+    _rd.seed(7)
+    for k in range(68):
+        c_ = _rd.choice(PAL[:5])
+        f_ = _rd.uniform(0.55, 1.0)
+        ax.add_patch(Rectangle((-13.0 + k * 0.385, -1.12), 0.34,
+                               _rd.uniform(0.10, 0.34),
+                               facecolor=_shade(c_, _rd.randint(0, 2), 3),
+                               edgecolor='none', zorder=0, alpha=f_))
+    fig.tight_layout(); save(fig, 'fig10_tornado')
+
+
+def mcolors_rgb_dark(c_):
+    import matplotlib.colors as mcolors
+    r, g, b = mcolors.to_rgb(c_)
+    return (r * 0.55, g * 0.55, b * 0.55)
+
 # ============================================================
 # fig12 全流程 3D 曲面 — "干燥过程的三维全貌"
 # ============================================================
@@ -491,6 +562,7 @@ if __name__ == '__main__':
     fig7_mms()
     fig8_criterion()
     fig9_shrink()
+    fig10_tornado()
     fig11_convergence()
     fig12_3d()
     print('全部 v2 图已输出至 figures/v2/')

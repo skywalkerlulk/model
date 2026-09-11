@@ -66,12 +66,34 @@ $\mathrm{Fo}_m=D(2.55)\,t/R^2\approx0.022$——温度场在半小时内已明�
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{fig0_cylinder.png}
-\caption{圆柱药材的几何模型与一维径向离散。（a）圆柱几何（长 25 cm、半径
-2 cm，长径比 12.5），烘房环境经对流传热传质作用于表面；（b）横截面上的
-一维径向模型：径向坐标 $r$、轴心对称条件与表面 Robin 边界，谱配点节点在
-表面与轴心处聚类。}
-\label{fig:cylinder}
+\tikzset{
+  hdbox/.style={rectangle, draw, double, double distance=0.8pt, line width=0.35pt,
+              rounded corners=3pt, minimum height=0.85cm, minimum width=2.5cm,
+              align=center, font=\small},
+  hddata/.style={rectangle, draw, double, double distance=0.8pt, line width=0.35pt,
+              fill=gray!8, rounded corners=3pt, minimum height=0.72cm,
+              minimum width=2.1cm, align=center, font=\small},
+  hdarr/.style={-{Stealth[length=2.4mm]}, thick, decorate,
+              decoration={random steps, segment length=3pt, amplitude=0.7pt}}}
+\begin{tikzpicture}[node distance=1.0cm and 1.5cm]
+  \node[hddata] (att1) {附件 1\\烘房环境};
+  \node[hdbox, right=of att1] (env) {环境辨识与\\平台外推};
+  \node[hdbox, below=of env, rotate=0.6] (q1) {问题一\\常热物性模型};
+  \node[hddata, left=of q1] (att2) {附件 2\\半径 $R(t)$};
+  \node[hdbox, right=of q1, rotate=-0.7] (q2) {问题二\\变物性耦合模型};
+  \node[hdbox, below=of q2, rotate=0.5] (q3) {问题三\\判据 $\max C<0.15$};
+  \node[hdbox, below=of q1, rotate=-0.5] (q4) {问题四\\收缩移动边界模型};
+  \draw[hdarr] (att1) -- (env);
+  \draw[hdarr] (env) -- (q1);
+  \draw[hdarr] (env) to[out=-20, in=20] (q2);
+  \draw[hdarr] (q1) -- node[above, font=\footnotesize]{附录 3 变物性} (q2);
+  \draw[hdarr] (q2) -- node[right, font=\footnotesize]{$t_{end}=57.83$ h} (q3);
+  \draw[hdarr] (att2) -- node[below, font=\footnotesize]{$R(t)$} (q4);
+  \draw[hdarr] (q3) -- node[right, font=\footnotesize]{附录 4 物性} (q4);
+\end{tikzpicture}
+\caption{总模型流程图：附件数据到四个问题的递进关系。问题三复用问题二的解，
+问题四在问题三基础上引入收缩边界。}
+\label{fig:flow}
 \end{figure}
 
 \subsection{各问的新增困难与处理}
