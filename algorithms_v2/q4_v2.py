@@ -118,7 +118,7 @@ def main():
         tt = float(h * 3600)
         Rt = R_out[tt] * 100.0
         cols = np.arange(0.0, Rt - 1e-9, 0.5)
-        vals = [float(np.interp(rc / 100.0, OUT_R_CM, C_out[tt][:-1]))
+        vals = [float(np.interp(rc, OUT_R_CM, C_out[tt][:-1]))   # OUT_R_CM 与 rc 均为 cm
                 for rc in cols]
         vals.append(C_out[tt][-1])
         print(f'{h:.0f}h\t' + '\t'.join(f'{rc:.1f}({v:.4f})' for rc, v in

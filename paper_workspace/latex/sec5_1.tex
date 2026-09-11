@@ -24,7 +24,10 @@ T_{env}(t)=T_\infty-(T_\infty-T_0)\,e^{-t/\tau}
 
 预热阶段温度场满足常物性轴对称热传导方程
 \begin{equation}
-\rho c_p\frac{\partial T}{\partial t}=\frac{k}{r}\frac{\partial}{\partial r}\left(r\frac{\partial T}{\partial r}\right),\quad
+\rho c_p\frac{\partial T}{\partial t}=\frac{k}{r}\frac{\partial}{\partial r}\left(r\frac{\partial T}{\partial r}\right)
+\end{equation}
+初始条件与边界条件为
+\begin{equation}
 T(r,0)=T_0,\quad \left.\frac{\partial T}{\partial r}\right|_{r=0}=0,\quad
 -\left.k\frac{\partial T}{\partial r}\right|_{r=R}=h\big(T(R,t)-T_{env}(t)\big)
 \end{equation}
@@ -48,8 +51,12 @@ g_n(t)=\frac{e^{-t/\tau}-e^{-\lambda_n^2\alpha t/R^2}}{\tau\lambda_n^2\alpha/R^2
 \end{equation}
 其中 $T_{fit}(t)=T_\infty-\Delta T e^{-t/\tau}$，$\Delta T=T_\infty-T_0$。残差 $\delta(t)$ 的贡献由指数滤波递归卷积计算
 \begin{equation}
-T_{res}(r,t)=\delta(t)-\sum_{n=1}^{80}A_n J_0\!\left(\frac{\lambda_n r}{R}\right)I_n(t),\quad
-I_n(t+\Delta t)=e^{-\lambda_n^2\alpha\Delta t/R^2}I_n(t)+\frac{\Delta t}{2}\Big[\delta'(t)\,e^{-\lambda_n^2\alpha\Delta t/R^2}+\delta'(t+\Delta t)\Big]
+T_{res}(r,t)=\delta(t)-\sum_{n=1}^{80}A_n J_0\!\left(\frac{\lambda_n r}{R}\right)I_n(t)
+\end{equation}
+其中 $I_n$ 由指数滤波递归计算：
+\begin{equation}
+I_n(t+\Delta t)=e^{-\lambda_n^2\alpha\Delta t/R^2}I_n(t)
++\frac{\Delta t}{2}\Big[\delta'(t)\,e^{-\lambda_n^2\alpha\Delta t/R^2}+\delta'(t+\Delta t)\Big]
 \end{equation}
 最终温度场 $T=T_{main}+T_{res}$。\textbf{极限自检}：$\tau\to0^+$ 时上式精确退化为阶跃响应（与 Bessel 级数解析解逐点一致到 $5\times10^{-9}$）；$t=0$ 时 $T=T_{env}(0)=T_0$（完备性 $\sum A_nJ_0=1$ 与残差项相互抵消）——两处极限验证了公式的正确性。该解是\textbf{准解析的}：对任意输出时刻无需时间步进，1800 个时刻的求解耗时在毫秒量级，且 4 位小数精度由级数截断误差（末项 $10^{-9}$ 量级）保证。
 
@@ -65,7 +72,11 @@ I_n(t+\Delta t)=e^{-\lambda_n^2\alpha\Delta t/R^2}I_n(t)+\frac{\Delta t}{2}\Big[
 水分场满足非线性扩散方程（$D$ 随 $C$ 变化，弱耦合）
 \begin{equation}
 \frac{\partial C}{\partial t}=\frac{1}{r}\frac{\partial}{\partial r}\left(r\,D(C)\frac{\partial C}{\partial r}\right),\quad
-D(C)=7\times10^{-9}e^{-0.89/C},\quad C(r,0)=2.55,\quad
+D(C)=7\times10^{-9}e^{-0.89/C}
+\end{equation}
+初始条件与边界条件为
+\begin{equation}
+C(r,0)=2.55,\qquad
 -\left.D\frac{\partial C}{\partial r}\right|_{r=R}=\beta\big(C(R,t)-C_{env}(t)\big)
 \end{equation}
 其中 $\beta=8\times10^{-7}$ m/s（附录 2）。非线性源于 $D(C)$ 的指数依赖，该方程无解析解，采用 Chebyshev 谱配点求解——这一离散框架同时是问题二至问题四的统一数值内核，此处给出其全部构造。

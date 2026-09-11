@@ -5,7 +5,9 @@
 
 整个烘干过程（预热平衡 + 恒温干燥）中物性随含水率与温度变化，采用附录 3 的经验公式：
 \begin{equation}
-\rho=650+128C,\quad c_p=1450+2736\frac{C}{C+1},\quad k=0.21+0.38\frac{C}{C+1},\quad
+\rho=650+128C,\quad c_p=1450+2736\frac{C}{C+1},\quad k=0.21+0.38\frac{C}{C+1}
+\end{equation}
+\begin{equation}
 D=2.4\times10^{-3}e^{-0.45/C}e^{-3850/T_K}
 \end{equation}
 （$T_K$ 取开尔文）。耦合机制是双向的：含水率 $C$ 通过 $\rho,c_p,k$ 改变热惯性与导热能力，温度 $T$ 通过 Arrhenius 项 $e^{-3850/T_K}$ 改变水分迁移速率。方程形式与问题一同构，物性替换后构成耦合系统
