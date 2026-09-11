@@ -5,3 +5,10 @@ __pycache__/
 
 # 队友独立工程 (自含 git 仓库, 不入外层仓库)
 A题/独立重建_正式工程/
+
+# LaTeX 构建产物
+*.aux
+*.log
+*.out
+missfont.log
+out/
