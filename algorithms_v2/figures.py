@@ -47,6 +47,108 @@ def save(fig, name):
     print(f'{name} 已输出')
 
 
+
+# ============================================================
+# fig0 圆柱几何模型 — "药材的几何与边界条件是什么"
+# ============================================================
+def fig0_cylinder():
+    from mpl_toolkits.mplot3d import Axes3D  # noqa
+    L_cm, R_cm = 25.0, 2.0
+    fig = plt.figure(figsize=(9.6, 4.2))
+    # ---- (a) 三维圆柱几何 ----
+    ax = fig.add_subplot(121, projection='3d')
+    th = np.linspace(0, 2*np.pi, 60)
+    z = np.linspace(0, L_cm, 12)
+    TH, ZZ = np.meshgrid(th, z)
+    X = R_cm*np.cos(TH); Y = R_cm*np.sin(TH)
+    ax.plot_surface(X, Y, ZZ, color='#8CB4D8', alpha=0.35, linewidth=0)
+    ax.plot_wireframe(X, Y, ZZ, color='#2C5F8A', linewidths=0.3, rstride=3, cstride=2)
+    # 端面
+    for zc in (0, L_cm):
+        ax.plot_surface(R_cm*np.cos(th)[None, :], R_cm*np.sin(th)[None, :],
+                        np.full((1, 60), zc), color='#8CB4D8', alpha=0.5, linewidth=0)
+    # 环境对流箭头
+    for phi in np.linspace(0, 2*np.pi, 8, endpoint=False):
+        x0, y0 = 1.5*R_cm*np.cos(phi), 1.5*R_cm*np.sin(phi)
+        ax.quiver(x0, y0, L_cm/2, 0.9*R_cm*np.cos(phi), 0.9*R_cm*np.sin(phi), 0,
+                  color=PAL[1], length=0.35, lw=1.2, arrow_length_ratio=0.2)
+    # 尺寸标注
+    ax.plot([0, 0], [0, 0], [0, L_cm], 'k-', lw=0.8)
+    ax.text(0.6, 0, L_cm/2, 'L = 25 cm', fontsize=9)
+    ax.plot([0, R_cm], [0, 0], [0, 0], 'k-', lw=0.8)
+    ax.text(R_cm*0.55, -0.9, 0, 'R = 2 cm', fontsize=9)
+    ax.text(0, -2.6, 2, '烘房环境: T_env(t), C_env(t)', fontsize=8.5, color=PAL[1])
+    ax.set_xlim(-3, 3); ax.set_ylim(-3, 3); ax.set_zlim(0, L_cm+4)
+    ax.set_xlabel('x / cm', fontsize=8); ax.set_ylabel('y / cm', fontsize=8)
+    ax.set_zlabel('z / cm', fontsize=8)
+    ax.set_title('圆柱药材几何 (长径比 L/R = 12.5)', fontsize=9)
+    ax.view_init(elev=16, azim=-60)
+    ax.tick_params(labelsize=6.5)
+    for a in (ax.xaxis, ax.yaxis, ax.zaxis):
+        a.set_pane_color((1, 1, 1, 0.9))
+    # ---- (b) 横截面一维径向离散 ----
+    ax2 = fig.add_subplot(122)
+    N_show = 48
+    x_gl = np.cos(np.pi*np.arange(N_show+1)/N_show)
+    r_gl = R_cm*(1-x_gl)/2.0
+    th2 = np.linspace(0, 2*np.pi, 200)
+    ax2.fill(R_cm*np.cos(th2), R_cm*np.sin(th2), color='#8CB4D8', alpha=0.25)
+    ax2.plot(R_cm*np.cos(th2), R_cm*np.sin(th2), color='#2C5F8A', lw=1.0)
+    for ri in r_gl[1:-1]:
+        ax2.plot(ri*np.cos(th2), ri*np.sin(th2), color='#2C5F8A', lw=0.25, alpha=0.6)
+    # 径向节点 (Chebyshev 聚类)
+    ax2.plot(r_gl, np.zeros_like(r_gl), 'o', ms=2.5, color=PAL[0], zorder=5)
+    ax2.plot(0, 0, 'o', ms=4, color=PAL[3], zorder=6, label='轴心 r=0 (对称)')
+    # 边界通量箭头
+    for phi in (-np.pi/2, -np.pi/4, 0):
+        ax2.annotate('', xy=(R_cm*1.5*np.cos(phi), R_cm*1.5*np.sin(phi)),
+                     xytext=(R_cm*1.05*np.cos(phi), R_cm*1.05*np.sin(phi)),
+                     arrowprops=dict(arrowstyle='->', color=PAL[1], lw=1.2))
+    ax2.text(1.15, 2.5, 'q_T = h(T−T_env)', fontsize=8.5, color=PAL[1], ha='center')
+    ax2.text(1.15, -2.5, 'q_C = β(C−C_env)', fontsize=8.5, color=PAL[1], ha='center')
+    ax2.annotate('', xy=(0.5, 0.7), xytext=(0.05, 0.15),
+                 arrowprops=dict(arrowstyle='->', color=PAL[0], lw=1.0))
+    ax2.text(0.55, 1.0, '径向坐标 r', fontsize=8.5, color=PAL[0])
+    ax2.set_xlim(-2.8, 2.8); ax2.set_ylim(-2.9, 2.9)
+    ax2.set_aspect('equal')
+    ax2.set_xlabel('x / cm', fontsize=9); ax2.set_ylabel('y / cm', fontsize=9)
+    ax2.set_title('横截面一维径向模型与谱节点 (Chebyshev 聚类)', fontsize=9)
+    ax2.legend(fontsize=7, loc='upper left')
+    ax2.tick_params(width=0.6)
+    panel(ax, 'a'); panel(ax2, 'b')
+    fig.tight_layout(); save(fig, 'fig0_cylinder')
+
+
+# ============================================================
+# fig12 全流程 3D 曲面 — "干燥过程的三维全貌"
+# ============================================================
+def fig12_3d():
+    d = np.load('results/q2_v2_full.npz')
+    t, C = d['t'] / 3600.0, d['C']
+    r = np.arange(0.0, 2.01, 0.1)
+    t_end = 208200 / 3600.0
+    fig = plt.figure(figsize=(6.4, 4.4))
+    ax = fig.add_subplot(111, projection='3d')
+    st = 8
+    RR, TT = np.meshgrid(r, t[::st])
+    surf = ax.plot_surface(RR, TT, C[::st], cmap='viridis', linewidth=0,
+                           rstride=1, cstride=1, antialiased=False)
+    fig.colorbar(surf, ax=ax, shrink=0.62, pad=0.08, label='C / (kg·kg⁻¹)')
+    ax.contour(RR, TT, C[::st], levels=[0.15], zdir='z', offset=0.15,
+               colors=PAL[1], linewidths=1.4)
+    # t_end 半透明平面
+    RRp, ZZp = np.meshgrid(r, np.linspace(0, C.max(), 8))
+    TTp = np.full_like(ZZp, t_end)
+    ax.plot_surface(RRp, TTp, ZZp, color=GREEN, alpha=0.15, linewidth=0)
+    ax.view_init(elev=24, azim=-45)
+    ax.set_xlabel('r / cm', fontsize=8); ax.set_ylabel('t / h', fontsize=8)
+    ax.set_zlabel('C / (kg·kg⁻¹)', fontsize=8)
+    ax.set_title('全流程水分浓度三维曲面 (红线: C=0.15; 绿面: t_end)', fontsize=9)
+    ax.tick_params(labelsize=6.5)
+    for a in (ax.xaxis, ax.yaxis, ax.zaxis):
+        a.set_pane_color((1, 1, 1, 0))
+    fig.tight_layout(); save(fig, 'fig12_3d')
+
 # ============================================================
 # fig1 谱系数瀑布图 — 回答"谱方法为什么高效"
 # ============================================================
@@ -379,6 +481,7 @@ def fig11_convergence():
 
 
 if __name__ == '__main__':
+    fig0_cylinder()
     fig1_spectral()
     fig2_duhamel()
     fig3_preheat()
@@ -389,4 +492,5 @@ if __name__ == '__main__':
     fig8_criterion()
     fig9_shrink()
     fig11_convergence()
+    fig12_3d()
     print('全部 v2 图已输出至 figures/v2/')
