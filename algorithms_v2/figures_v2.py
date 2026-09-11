@@ -264,7 +264,7 @@ def fig7_mms():
 def fig8_criterion():
     d = np.load('results/q2_v2_full.npz')
     t, C = d['t'] / 3600.0, d['C']
-    t_end = 211860 / 3600.0
+    t_end = 208200 / 3600.0      # 57.83 h (N=128 收敛值)
     fig, ax = plt.subplots(figsize=(6.2, 3.4))
     ax.plot(t, C[:, 0], color=PAL[0], lw=1.5, label='中心 r = 0')
     ax.plot(t, C[:, -1], color=PAL[1], lw=1.5, label='表面 r = 2 cm')
@@ -303,11 +303,11 @@ def fig9_shrink():
     axes[1].plot(q2['t'] / 3600, q2['C'][:, 0], color=PAL[3], lw=1.3, label='问题3 固定半径')
     axes[1].plot(t4, C4[:, 0], color=PAL[0], lw=1.3, label='问题4 收缩模型')
     axes[1].axhline(0.15, color='#333', ls='--', lw=0.9)
-    axes[1].axvline(211860 / 3600, color=PAL[3], ls=':', lw=1.0)
+    axes[1].axvline(208200 / 3600, color=PAL[3], ls=':', lw=1.0)
     axes[1].axvline(t_end4, color=PAL[0], ls=':', lw=1.0)
-    axes[1].annotate('', xy=(211860 / 3600, 2.30), xytext=(t_end4, 2.30),
+    axes[1].annotate('', xy=(208200 / 3600, 2.30), xytext=(t_end4, 2.30),
                      arrowprops=dict(arrowstyle='<->', color='#333', lw=0.9))
-    axes[1].text((211860 / 3600 + t_end4) / 2, 2.36, 'Δ = 6.62 h (11.3%)',
+    axes[1].text((208200 / 3600 + t_end4) / 2, 2.36, 'Δ = 6.68 h (11.6%)',
                  fontsize=6.5, ha='center')
     style2d(axes[1], 't / h', 'C(0,t) / (kg·kg⁻¹)')
     axes[1].set_xlim(0, 72); axes[1].set_ylim(0, 2.6)
