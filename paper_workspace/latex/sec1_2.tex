@@ -41,7 +41,7 @@
 \begin{enumerate}
 \item \textbf{扩散系数的强非线性}：附录 3 中扩散系数
 $D=2.4\times10^{-3}e^{-0.45/C}e^{-3850/T_K}$ 当含水率从 2.55 降至 0.05 时
-下降约 4 个数量级，干燥进入减速段，总时长
+下降约 \textbf{4 个数量级}，干燥进入减速段，总时长
 达 2--3 天，数值求解必须采用隐式、自适应方法；
 \item \textbf{双向耦合}：含水率通过 $\rho,c_p,k$ 改变热惯性，温度通过 Arrhenius
 项改变扩散系数；
@@ -52,8 +52,8 @@ $D=2.4\times10^{-3}e^{-0.45/C}e^{-3850/T_K}$ 当含水率从 2.55 降至 0.05 �
 求解前先做无量纲估计。取特征尺度 $R=0.02$ m：热扩散率
 $\alpha=k/(\rho c_p)\approx1.69\times10^{-7}$ m$^2$/s，Biot 数
 $\mathrm{Bi}_T=hR/k=1.39$；$t=1800$ s 时温度场 Fourier 数
-$\mathrm{Fo}_T=\alpha t/R^2\approx0.76$，水分场 Fourier 数
-$\mathrm{Fo}_m=D(2.55)\,t/R^2\approx0.022$——温度场在半小时内已明显响应，
+$\mathrm{Fo}_T=\alpha t/R^2\approx\textbf{0.76}$，水分场 Fourier 数
+$\mathrm{Fo}_m=D(2.55)\,t/R^2\approx\textbf{0.022}$——温度场在半小时内已明显响应，
 而中心含水率几乎不变。定义
 
 \begin{equation}

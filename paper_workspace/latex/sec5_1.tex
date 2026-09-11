@@ -99,9 +99,9 @@ $C_{rr}+C_r/r$ 在轴心附近的谱离散不稳定，具体分析见附录 B）
 \subsubsection{结果}
 
 表~\ref{tab:q1t}、\ref{tab:q1c}（分别按题目表 1、表 2 格式输出，完整数据
-见 result1.xlsx）：30 min 内表面温度由 28.00\,°C 升至 36.79\,°C
+见 result1.xlsx）：30 min 内表面温度由 28.00\,°C 升至 \textbf{36.79\,°C}
 （100 s 时 28.18\,°C），中心升至 33.58\,°C；表面含水率由 2.5500 降至
-1.5102 kg/kg，中心保持 2.5500 kg/kg。图~\ref{fig:preheat} 以二维热图
+\textbf{1.5102} kg/kg，中心保持 \textbf{2.5500} kg/kg。图~\ref{fig:preheat} 以二维热图
 与径向剖面给出时空演化：温度场整体爬升并形成径向梯度，水分仅在表面薄层
 下降。这与无量纲估计一致（$\mathrm{Fo}_T=0.76$、$\mathrm{Fo}_m=0.022$）：
 预热阶段工艺目标是快速均温、尽量保持内部水分。
@@ -119,9 +119,9 @@ $C_{rr}+C_r/r$ 在轴心附近的谱离散不稳定，具体分析见附录 B）
 \subsubsection{验证}
 
 \begin{enumerate}
-\item 解析基准：谱配点温度解与 5.1.2 解析解逐点对比，最大偏差
+\item \textbf{解析基准}：谱配点温度解与 5.1.2 解析解逐点对比，最大偏差
 $1.6\times10^{-4}$\,°C（图~\ref{fig:duhamel}）；
-\item 常扩散系数情形的谱解与 Bessel 级数解偏差 $9.5\times10^{-9}$；
-\item 独立算法交叉验证：与有限体积法求解器（400 节点，网格收敛验证后）
+\item \textbf{Bessel 级数基准}：常扩散系数情形的谱解与级数解偏差 \textbf{$9.5\times10^{-9}$}；
+\item \textbf{独立算法交叉验证}：与有限体积法求解器（400 节点，网格收敛验证后）
 对比，表~\ref{tab:q1t}、\ref{tab:q1c} 逐项 4 位小数一致。
 \end{enumerate}
