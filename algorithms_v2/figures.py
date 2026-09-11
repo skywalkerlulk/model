@@ -410,17 +410,23 @@ def fig6_env_model():
     for ax, env, y_d, name in (
             (axes[0], T_env, df['温度'].values, '温度'),
             (axes[1], C_env, df['水分浓度'].values, '水分浓度')):
-        ax.axvspan(7200, 14400, color='#999', alpha=0.10)
-        ax.plot(t_d / 3600, y_d, '.', ms=2, color='#999', label='附件1 数据')
+        # 平台期统计区间 (标注清楚, 避免误读为异常竖带)
+        ax.axvspan(7200, 14400, color='#999', alpha=0.10, linewidth=0)
+        ax.axvline(7200, color='#888', lw=0.7, ls=(0, (3, 3)))
+        ax.axvline(14400, color='#888', lw=0.7, ls=(0, (3, 3)))
+        ax.plot(t_d / 3600, y_d, '.', ms=2.2, color='#999', label='附件1 数据')
         tt = np.linspace(0, 14400, 500)
         ax.plot(tt / 3600, [env(x) for x in tt], color=PAL[0], lw=1.3,
                 label='一阶惯性 + 残差模型')
         ax.plot([7200 / 3600, 14400 / 3600], [env(14400)] * 2, '--', color=PAL[1], lw=1.1,
                 label=f'平台外推 ({env(14400):.3f})')
+        ax.text(2.55, y_d.min(), '平台期\n(t ≥ 2 h)', fontsize=7, color='#555',
+                va='bottom', ha='center')
         ax.set_xlabel('t / h', fontsize=9); ax.set_ylabel(f'烘房{name}', fontsize=9)
-        ax.legend(fontsize=7); ax.grid(**GRID); ax.tick_params(width=0.6)
+        ax.legend(fontsize=7, loc='lower right'); ax.grid(**GRID); ax.tick_params(width=0.6)
     panel(axes[0], 'a'); panel(axes[1], 'b')
     fig.tight_layout(); save(fig, 'fig6_env_model')
+
 
 # ============================================================
 # fig7 MMS — "求解器可不可信"
