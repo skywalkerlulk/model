@@ -12,3 +12,6 @@ A题/独立重建_正式工程/
 *.out
 missfont.log
 out/
+
+# 构建产物与本地拷贝
+paper_workspace/latex/main.pdf
