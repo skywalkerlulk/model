@@ -75,8 +75,8 @@ D(C)=7\times10^{-9}e^{-0.89/C}
 \end{equation}
 
 初值 $C(r,0)=2.55$，表面条件 $-D\,\partial C/\partial r=\beta(C-C_{env})$，
-$\beta=8\times10^{-7}$ m/s。温度方程与水分方程没有直接的双向作用（热物性
-为常数，$D$ 不含温度），水分方程经 $D(C)$ 单向依赖于自身场。
+$\beta=8\times10^{-7}$ m/s。温度场与水分场相互独立演化：热物性为常数，温度方程不依赖含水率；
+水分扩散方程因 $D(C)$ 的含水率依赖呈非线性，其解也不反馈到温度方程。
 
 空间离散采用 Chebyshev--Gauss--Lobatto 谱配点（$N$ 个模式，$r=R(1-x)/2$
 映射），一阶微分矩阵按 Trefethen 公式给出\cite{trefethen}；扩散项按乘积
