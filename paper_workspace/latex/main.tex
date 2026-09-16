@@ -1,0 +1,82 @@
+\documentclass{cumcmthesis}
+% \documentclass[withoutpreface,bwprint]{cumcmthesis} % 电子版提交时去掉封面与编号页
+
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{url}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, decorations.pathmorphing}
+
+% 字体平台适配: cls 默认 Windows 字体 (SimSun/楷体), macOS 用系统宋体/楷体替代
+\IfFontExistsTF{SimSun}{}{\setCJKfamilyfont{song}[AutoFakeBold]{Songti SC}}
+\IfFontExistsTF{simkai.ttf}{}{\setCJKfamilyfont{kai}[AutoFakeBold]{Kaiti SC}}
+
+\title{中药材热风烘干过程的传热传质建模与烘干时长判定}
+\tihao{A}
+\baominghao{XXXXXX}
+\schoolname{XX大学}
+\membera{ }
+\memberb{ }
+\memberc{ }
+\supervisor{ }
+\yearinput{2026}
+\monthinput{9}
+\dayinput{11}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+中药材热风烘干中，扩散系数随含水率下降 4 个数量级、温度与水分双向耦合、失水收缩三个因素共同决定干燥效率与时长。本文针对圆柱形药材（长 25 cm、半径 2 cm）建立一维轴对称传热传质模型：将烘房环境辨识为一阶惯性环节并以数据统计外推恒温段边界，用 Chebyshev 谱配点法统一求解四个子问题，全部数值结果经解析基准与独立算法交叉验证。
+
+\textbf{针对问题一}（预热平衡阶段，常热物性），本文导出圆柱对流边界下温度场的解析解：将环境分解为指数主项与残差，主项响应由 Duhamel 卷积显式求值，残差经递归卷积修正；水分场由非线性扩散方程数值求解。数值解与解析解偏差 $1.6\times10^{-4}$\,°C。结果显示 30 min 内表面温度升至 36.79\,°C，表面含水率由 2.55 降至 1.51 kg/kg，中心保持 2.5500 kg/kg，预热阶段“均温锁水”的工艺意图得到定量确认。
+
+\textbf{针对问题二与问题三}，本文引入附录 3 变物性公式建立双向耦合模型：含水率改变密度、比热容与导热系数，温度经 Arrhenius 项改变扩散系数。谱模式数 $N=48/96/128$ 的收敛序列表明干燥锋面需 $N\ge96$ 才充分分辨，全部提交结果取收敛值。在 60 s 分辨率下解得烘干时长 $t_{end}=\textbf{57.83\ h}$，与独立有限体积法参考解（57.77 h）相差 \textbf{0.06 h}，与附件 2 收缩平台（约 70 h）量级一致。
+
+\textbf{针对问题四}，本文以随体坐标追踪干物质，建立收缩移动边界模型：干基含水率依附于干物质，收缩不产生虚假的含水率变化，方程简化为时变域上的扩散问题，半径取附件 2 实测数据（径向仿射收缩假设）。解得烘干时长 \textbf{51.15 h}，比固定半径情形缩短 6.68 h（11.6\%）；与另一套独立坐标变换的离散结果逐项一致，收缩--失水关系早期线性、后期饱和，与实测收缩平台相符。
+
+\textbf{灵敏度分析表明}：\textbf{恒温段温度}是烘干时长的主导控制量（$\pm10\%$ 引起 \textbf{$-8.7\sim+10.9$ h}），扩散系数前置因子次之，对流换热系数影响不足 0.1 h——干燥时长由水分扩散控制而非传热控制。所建模型与验证方法可推广至片状/球状药材干燥与果蔬脱水等场景。
+
+\keywords{药材烘干\quad 传热传质耦合\quad 谱配点法\quad 解析解\quad 移动边界\quad 烘干时长判定}
+\end{abstract}
+
+% 目录 (2019 年规则明确不要目录)
+
+\input{sec1_2}
+\input{sec3_4}
+\input{sec5_1}
+\input{sec5_2_4}
+\input{sec6_7}
+
+\section{AI 工具使用声明}
+
+本队在竞赛过程中使用了 AI 工具辅助完成部分工作，具体使用情况如下：
+（1）语言润色：论文部分段落的文字表述经 AI 工具辅助润色，所有技术内容、公式推导与数值结果均由队员理解、核验并确认；
+（2）文献辅助检索：部分参考文献通过 AI 辅助检索定位，引用前已人工核对原文信息；
+（3）代码调试：数值求解程序的部分调试与向量化优化借助 AI 工具完成，全部代码经队员逐段审查、运行验证并理解其原理；
+（4）图表绘制：部分图表的绘制代码由 AI 辅助生成，图形内容与数据均经队员核验。
+
+详细使用记录（工具名称、版本、具体使用环节、典型提示方式及人工核验情况）见支撑材料《AI 工具使用详情.pdf》。
+
+\begin{thebibliography}{99}
+\bibitem{gasparin} Gasparin S, Dutykh D, Mendes N. A spectral method for solving heat and moisture transfer through consolidated porous media[J]. arXiv:1902.07775, 2019.
+\bibitem{luikov} Luikov A V. Systems of differential equations of heat and mass transfer in capillary-porous bodies (review)[J]. International Journal of Heat and Mass Transfer, 1975, 18(1): 1-14.
+\bibitem{trefethen} Trefethen L N. Spectral Methods in MATLAB[M]. Philadelphia: SIAM, 2000.
+\bibitem{berrut} Berrut J P, Trefethen L N. Barycentric Lagrange interpolation[J]. SIAM Review, 2004, 46(3): 501-517.
+\bibitem{carslaw} Carslaw H S, Jaeger J C. Conduction of Heat in Solids[M]. 2nd ed. Oxford: Clarendon Press, 1959.
+\bibitem{roache} Roache P J. Code verification by the method of manufactured solutions[J]. Journal of Fluids Engineering, 2002, 124(1): 4-10.
+\bibitem{bialobrzewski} Bia\l{}obrzewski I, Zieli\'nska M, Mujumdar A S, et al. Heat and mass transfer during drying of a bed of shrinking particles---simulation for carrot cubes dried in a spout-fluidized-bed drier[J]. Drying Technology, 2008.
+\bibitem{ozisik} Ozisik M N. Heat Conduction[M]. 2nd ed. New York: Wiley, 1993.
+\bibitem{leveque} LeVeque R J. Finite Difference Methods for Ordinary and Partial Differential Equations[M]. Philadelphia: SIAM, 2007.
+\bibitem{jiang} 姜启源, 谢金星, 叶俊. 数学模型[M]. 5 版. 北京: 高等教育出版社, 2018.
+\end{thebibliography}
+
+\newpage
+\appendix
+\input{appendix}
+
+\end{document}

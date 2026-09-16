@@ -1,0 +1,44 @@
+{
+  "competition": "cumcm",
+  "topic": "A 药材的烘干问题",
+  "independent_restart": true,
+  "phase": 1,
+  "date": "2026-09-11",
+  "status": "design_review_complete_conditionally_selected_no_final_solver",
+  "selected_route": "Dry-solid material control volumes; moisture Kirchhoff potential and cylindrical resistance flux; monotone implicit reference; endpoint error budgeting",
+  "supplied_materials_all_read": true,
+  "prior_local_solution_files_found": false,
+  "public_repositories_compared": 4,
+  "skill_use": [
+    "mathmodel-skill",
+    "academic-research-suite",
+    "data-analytics:analyze-data-quality",
+    "pdf"
+  ],
+  "conditional_closures": [
+    "Equivalent solid-basis environment target and effective hm",
+    "Empirical rho*cp as effective heat storage, separate conserved dry mass",
+    "No claim of fully closed physical phase-change energy"
+  ],
+  "completed": [
+    "Input and template audit",
+    "Literature evidence scan",
+    "GitHub workflow and public model comparison",
+    "Dry-basis and density incompatibility derivations",
+    "Material-coordinate transformation",
+    "Local nonlinear-flux quadrature comparison",
+    "Candidate review and next-phase validation contract"
+  ],
+  "not_completed": [
+    "Production solver",
+    "Whole-problem toy solve",
+    "PDE convergence measurements",
+    "Independent FEM",
+    "Q1-Q4 numerical answers",
+    "Final Excel",
+    "Production figures",
+    "Formal full coupled stop-time error certification"
+  ],
+  "next_phase": "Implement and validate local flux, constant-cylinder and no-flux-shrinkage prototypes before official computations",
+  "empirical_accuracy_claimed": false
+}

@@ -1,0 +1,128 @@
+% ============ §1 问题重述 ============
+\section{问题重述}
+
+\subsection{问题背景}
+
+干燥是决定中药材成品品质的关键工序：含水率过高易导致霉变与有效成分降解，
+干燥速率过快则引起表面开裂。热风烘干分为预热平衡（快速升温、保持较高湿度
+以防表面过快失水）与恒温干燥（稳定温湿环境完成主体脱水）两个阶段。烘干
+时长与温湿度工艺参数的选取目前高度依赖经验，建立可靠的传热传质模型是
+优化工艺的前提\cite{bialobrzewski,luikov}。
+
+\subsection{四个问题}
+
+\begin{table}[H]
+\centering
+\caption{四个问题的内容与输出要求}
+\begin{tabular}{p{1.2cm}p{8.6cm}p{4.4cm}}
+\toprule
+问题 & 内容 & 输出 \\
+\midrule
+一 & 预热平衡阶段（常热物性，附录 2）药材温度与水分浓度的变化规律 & 表 A（7 时刻 $\times$ 5 半径）；result1.xlsx \\
+二 & 整个烘干过程（预热 + 恒温，变物性公式附录 3）的温度与水分浓度模型 & 表 B（每 0.5 h）；result2.xlsx \\
+三 & 按烘干要求（各处水分浓度 $<0.15$ kg/kg）确定烘干时长 & 表 C（每 6 h）；result3.xlsx \\
+四 & 考虑失水收缩（附录 4 物性、附件 2 半径数据）重新确定烘干时长 & 表 D（每 6 h）；result4.xlsx \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+（表 A--D 分别按题目表 1--4、5、6 的格式要求输出，全文结果保留四位小数。）
+
+% ============ §2 问题分析 ============
+\section{问题分析}
+
+\subsection{总体分析}
+
+四个问题对应同一个圆柱轴对称传热传质框架的逐步推广：问题一为常热物性
+（仅扩散系数随含水率变化）；问题二引入全变物性与双向耦合；问题三在问题二
+的解上施加终止判据；问题四将求解域变为随失水收缩的移动域。求解难度由三个
+因素叠加决定：
+
+\begin{enumerate}
+\item \textbf{扩散系数的强非线性}：附录 3 中扩散系数
+$D=2.4\times10^{-3}e^{-0.45/C}e^{-3850/T_K}$ 当含水率从 2.55 降至 0.05 时
+下降约 \textbf{4 个数量级}，干燥进入减速段，总时长
+达 2--3 天，数值求解必须采用隐式、自适应方法；
+\item \textbf{双向耦合}：含水率通过 $\rho,c_p,k$ 改变热惯性，温度通过 Arrhenius
+项改变扩散系数；
+\item \textbf{时变边界与移动边界}：环境条件 0--4 h 由数据给出、之后需外推；
+问题四中半径随时间收缩。
+\end{enumerate}
+
+求解前先做无量纲估计。取特征尺度 $R=0.02$ m：热扩散率
+$\alpha=k/(\rho c_p)\approx1.69\times10^{-7}$ m$^2$/s，Biot 数
+$\mathrm{Bi}_T=hR/k=1.39$；$t=1800$ s 时温度场 Fourier 数
+$\mathrm{Fo}_T=\alpha t/R^2\approx\textbf{0.76}$，水分场 Fourier 数
+$\mathrm{Fo}_m=D(2.55)\,t/R^2\approx\textbf{0.022}$——温度场在半小时内已明显响应，
+而中心含水率几乎不变。定义
+
+\begin{equation}
+\Gamma=\frac{\alpha}{D(C,T)}
+\end{equation}
+
+为热扩散与水分扩散的时间尺度比（本文不用 Luikov 数的常见定义 $D/\alpha$，
+以避免符号歧义）。$\Gamma$ 由湿态的约 10 升至干态的约 $10^5$：$\Gamma$ 增大表示热扩散
+相对于水分扩散越来越快，因此后期温度场更快趋于准稳态，总干燥过程
+逐渐受水分扩散控制。这一观察用于 5.2 节的机理讨论与 6.2 节灵敏度解释。
+
+
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{fig0_mechanism.png}
+\caption{物理机理示意图。（a）药材在烘干室中的位置与环境辨识（内嵌：环境
+温度的一阶惯性拟合与平台期）；（b）单根药材的表面传热传质（轴向长度不变、
+半径收缩至 $R(t)$）；（c）横截面径向模型：控制方程、边界条件与谱配点
+节点（表面与轴心处聚类）。}
+\label{fig:mechanism}
+\end{figure}
+
+\subsection{各问的新增困难与处理}
+
+\textbf{问题一}：常热物性，温度方程与水分方程仅经 $D(C)$ 单向关联。
+新增困难在于 4 位小数表格精度与离散环境数据的处理。处理：环境辨识为一阶
+惯性环节（数据统计支撑平台外推），温度场用解析方法求解并作为数值解的
+基准；水分场用谱配点求解。
+
+\textbf{问题二}：物性全面随 $C$、$T$ 变化，温度与水分双向耦合；环境条件
+需覆盖 2--3 天而附件 1 只有 4 h。处理：沿用问题一的空间离散，物性代入
+耦合方程组；环境分两段（0--4 h 辨识模型、之后平台外推）。数值难点是干燥
+锋面的空间分辨率，5.2 节给出收敛性证据。
+
+\textbf{问题三}：新增决策条件 $\max C(r,t)<0.15$。由于水分沿半径单调递减，
+最严点为中心。处理：直接复用问题二的解做 60 s 分辨率判据扫描，并讨论
+判据跨越处对数值精度的敏感性。
+
+\textbf{问题四}：新增移动边界 $R(t)$（附件 2）与附录 4 物性。处理：随体
+坐标下推导干基含水率的守恒方程（5.4 节），关键假设是径向仿射收缩。由于
+本问同时改变了物性体系与求解域，5.4 节增设附录 4 固定半径的对照基准，
+把物性效应与纯几何收缩效应分开。
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  node distance=0.9cm and 1.4cm,
+  box/.style={rectangle, draw, rounded corners=2pt, minimum height=0.8cm,
+              minimum width=2.6cm, align=center, font=\small},
+  data/.style={rectangle, draw, fill=gray!12, rounded corners=2pt,
+              minimum height=0.7cm, minimum width=2.2cm, align=center, font=\small},
+  arr/.style={-{Stealth[length=2.5mm]}, thick}]
+  \node[data] (att1) {附件 1\\烘房环境};
+  \node[box, right=of att1] (env) {环境辨识与\\平台外推};
+  \node[box, below=of env] (q1) {问题一\\常热物性模型};
+  \node[data, left=of q1] (att2) {附件 2\\半径 $R(t)$};
+  \node[box, right=of q1] (q2) {问题二\\变物性耦合模型};
+  \node[box, below=of q2] (q3) {问题三\\判据 $\max C<0.15$};
+  \node[box, below=of q1] (q4) {问题四\\收缩移动边界模型};
+  \draw[arr] (att1) -- (env);
+  \draw[arr] (env) -- (q1);
+  \draw[arr] (env) to[out=-20,in=20] (q2);
+  \draw[arr] (q1) -- node[above,font=\footnotesize]{附录 3 变物性} (q2);
+  \draw[arr] (q2) -- node[right,font=\footnotesize]{$t_{end}=57.83$ h} (q3);
+  \draw[arr] (att2) -- node[below,font=\footnotesize]{$R(t)$} (q4);
+  \draw[arr] (q3) -- node[right,font=\footnotesize]{附录 4 物性} (q4);
+\end{tikzpicture}
+\caption{总模型流程图：附件数据到四个问题的递进关系。问题三复用问题二的解，
+问题四在问题三基础上引入收缩边界。}
+\label{fig:flow}
+\end{figure}

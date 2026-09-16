@@ -1,0 +1,518 @@
+{
+  "phase": "1 - design review only",
+  "date": "2026-09-11",
+  "source_of_truth": "user supplied local problem and attachments",
+  "pdf_pages": 4,
+  "official_solver_run": false,
+  "official_results_created": false,
+  "files": [
+    {
+      "path": "A题.pdf",
+      "sha256": "052d8014bff5727c019b72e44fdffaf5c145ce04050dd938baaf3527db331736",
+      "bytes": 553320
+    },
+    {
+      "path": "附件/附件1.xlsx",
+      "sha256": "7ef32870abeef420b89560b2530ff60dfe4255917805151d89988d0311af9dd7",
+      "bytes": 16586,
+      "sheets": [
+        {
+          "name": "Sheet1",
+          "rows_including_header": 242,
+          "columns": 3,
+          "headers": [
+            "时间",
+            "温度",
+            "水分浓度"
+          ],
+          "merged_ranges": [],
+          "formula_count": 0,
+          "records": 241,
+          "all_finite": true,
+          "unique_times": true,
+          "time_range_seconds": [
+            0.0,
+            14400.0
+          ],
+          "time_steps_seconds": [
+            60.0
+          ],
+          "column_min": [
+            0.0,
+            28.0,
+            0.01963
+          ],
+          "column_max": [
+            14400.0,
+            50.246,
+            0.05025
+          ],
+          "tail_3_to_4_hours": {
+            "n": 61,
+            "mean": [
+              49.99893442622951,
+              0.04998754098360656
+            ],
+            "median": [
+              50.003,
+              0.05
+            ],
+            "sample_std": [
+              0.15435336826607313,
+              0.0001501294523370292
+            ],
+            "slope_per_hour": [
+              0.00282390269699379,
+              -1.2882072977254417e-05
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "附件/附件2.xlsx",
+      "sha256": "5563acbfa4b4afb10cc6c03e2207e5369bf39da27576672aff14cc5c32e704af",
+      "bytes": 11485,
+      "sheets": [
+        {
+          "name": "Sheet1",
+          "rows_including_header": 146,
+          "columns": 2,
+          "headers": [
+            "时间",
+            "半径"
+          ],
+          "merged_ranges": [],
+          "formula_count": 0,
+          "records": 145,
+          "all_finite": true,
+          "unique_times": true,
+          "time_range_seconds": [
+            0.0,
+            259200.0
+          ],
+          "time_steps_seconds": [
+            1800.0
+          ],
+          "column_min": [
+            0.0,
+            1.198
+          ],
+          "column_max": [
+            259200.0,
+            2.0
+          ],
+          "radius_nonincreasing": true
+        }
+      ]
+    },
+    {
+      "path": "附件/附件3/result1.xlsx",
+      "sha256": "23b261b295c1b787d000eebbca6521c37075107b6fcf78724f8d395ce1798ff4",
+      "bytes": 10073,
+      "sheets": [
+        {
+          "name": "温度",
+          "rows_including_header": 5,
+          "columns": 6,
+          "headers": [
+            "时间\\到药材中心的距离",
+            0,
+            0.1,
+            0.2,
+            "…",
+            2
+          ],
+          "merged_ranges": [],
+          "formula_count": 0,
+          "all_template_rows": [
+            [
+              "时间\\到药材中心的距离",
+              0,
+              0.1,
+              0.2,
+              "…",
+              2
+            ],
+            [
+              1,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              2,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              3,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              "…",
+              null,
+              null,
+              null,
+              null,
+              null
+            ]
+          ]
+        },
+        {
+          "name": "水分浓度",
+          "rows_including_header": 5,
+          "columns": 6,
+          "headers": [
+            "时间\\到药材中心的距离",
+            0,
+            0.1,
+            0.2,
+            "…",
+            2
+          ],
+          "merged_ranges": [],
+          "formula_count": 0,
+          "all_template_rows": [
+            [
+              "时间\\到药材中心的距离",
+              0,
+              0.1,
+              0.2,
+              "…",
+              2
+            ],
+            [
+              1,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              2,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              3,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              "…",
+              null,
+              null,
+              null,
+              null,
+              null
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "path": "附件/附件3/result2.xlsx",
+      "sha256": "23b261b295c1b787d000eebbca6521c37075107b6fcf78724f8d395ce1798ff4",
+      "bytes": 10073,
+      "sheets": [
+        {
+          "name": "温度",
+          "rows_including_header": 5,
+          "columns": 6,
+          "headers": [
+            "时间\\到药材中心的距离",
+            0,
+            0.1,
+            0.2,
+            "…",
+            2
+          ],
+          "merged_ranges": [],
+          "formula_count": 0,
+          "all_template_rows": [
+            [
+              "时间\\到药材中心的距离",
+              0,
+              0.1,
+              0.2,
+              "…",
+              2
+            ],
+            [
+              1,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              2,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              3,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              "…",
+              null,
+              null,
+              null,
+              null,
+              null
+            ]
+          ]
+        },
+        {
+          "name": "水分浓度",
+          "rows_including_header": 5,
+          "columns": 6,
+          "headers": [
+            "时间\\到药材中心的距离",
+            0,
+            0.1,
+            0.2,
+            "…",
+            2
+          ],
+          "merged_ranges": [],
+          "formula_count": 0,
+          "all_template_rows": [
+            [
+              "时间\\到药材中心的距离",
+              0,
+              0.1,
+              0.2,
+              "…",
+              2
+            ],
+            [
+              1,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              2,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              3,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              "…",
+              null,
+              null,
+              null,
+              null,
+              null
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "path": "附件/附件3/result3.xlsx",
+      "sha256": "07e4793d620a7f899804c0298d49a16a197960440fd47f8bb780c57ec27e2859",
+      "bytes": 9345,
+      "sheets": [
+        {
+          "name": "Sheet1",
+          "rows_including_header": 5,
+          "columns": 6,
+          "headers": [
+            "时间\\到药材中心的距离",
+            0,
+            0.1,
+            0.2,
+            "…",
+            2
+          ],
+          "merged_ranges": [],
+          "formula_count": 0,
+          "all_template_rows": [
+            [
+              "时间\\到药材中心的距离",
+              0,
+              0.1,
+              0.2,
+              "…",
+              2
+            ],
+            [
+              60,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              120,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              180,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              "…",
+              null,
+              null,
+              null,
+              null,
+              null
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "path": "附件/附件3/result4.xlsx",
+      "sha256": "86e9300ffa3d30c43de895ea6723da943e85b8740b137bcae5af7107f076eeac",
+      "bytes": 9351,
+      "sheets": [
+        {
+          "name": "Sheet1",
+          "rows_including_header": 5,
+          "columns": 6,
+          "headers": [
+            "时间\\到药材中心的距离",
+            0,
+            0.1,
+            0.2,
+            "…",
+            "药材表面"
+          ],
+          "merged_ranges": [],
+          "formula_count": 0,
+          "all_template_rows": [
+            [
+              "时间\\到药材中心的距离",
+              0,
+              0.1,
+              0.2,
+              "…",
+              "药材表面"
+            ],
+            [
+              60,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              120,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              180,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              "…",
+              null,
+              null,
+              null,
+              null,
+              null
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "algebraic_audit": {
+    "Q4_initial_dry_density_if_wet_density": 278.7323943661972,
+    "Q4_min_possible_radius_cm_fixed_length": 1.2112029565383968,
+    "Q4_max_dry_mass_ratio_72h_if_C_nonnegative": 0.9783174310257706,
+    "Q23_dry_mass_ratio_at_uniform_threshold_if_wet_density": 2.1157223518515225,
+    "Q1_thermal_diffusivity": 1.6885553470919323e-07,
+    "Q1_Biot_radius_convention": 1.3888888888888888,
+    "Q4_radius_squared_ratio_72h": 0.358801
+  },
+  "local_flux_check": {
+    "32": {
+      "quadrature": "Gauss-Legendre",
+      "b": 0.45,
+      "C_left": 0.05,
+      "C_right": 0.15,
+      "integral_secant_without_common_aT": 0.01595719581966696,
+      "endpoint_harmonic_without_common_aT": 0.00024620931629467817,
+      "ratio": 64.81150291067144,
+      "scope": "local steady isothermal diagnostic, not whole-problem result"
+    },
+    "64": {
+      "quadrature": "Gauss-Legendre",
+      "b": 0.45,
+      "C_left": 0.05,
+      "C_right": 0.15,
+      "integral_secant_without_common_aT": 0.01595719581966694,
+      "endpoint_harmonic_without_common_aT": 0.00024620931629467817,
+      "ratio": 64.81150291067135,
+      "scope": "local steady isothermal diagnostic, not whole-problem result"
+    }
+  },
+  "known_gaps": [
+    "No internal temperature or moisture observations",
+    "Air to solid equilibrium mapping not supplied",
+    "Given empirical density not jointly consistent with all strict mass/geometry interpretations",
+    "Latent and moisture enthalpy closure not fully specified",
+    "Internal deformation and axial length evolution not observed"
+  ]
+}
